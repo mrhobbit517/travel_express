@@ -3,97 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅結 Pro | 修正版</title>
+    <title>旅結 Pro | 和風背景版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --navy: #0369a1; }
-        body { font-family: 'Noto Sans TC', sans-serif; background: #f8fafc; }
+        :root { --navy: #0369a1; --gold: #D4AF37; }
+        body { font-family: 'Noto Sans TC', sans-serif; }
+        
+        /* 核心背景設定 */
+        .wano-bg {
+            background-image: url('https://i.imgur.com/DRcZvHV.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* 固定背景 */
+        }
+        
+        /* 磨砂玻璃效果 (Glassmorphism) 讓內容浮起 */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        /* 交互微交互 */
+        .action-btn { transition: all 0.2s; }
+        .action-btn:active { transform: scale(0.96); opacity: 0.9; }
         .tab-active { color: var(--navy); border-bottom: 3px solid var(--navy); font-weight: bold; }
-        .action-btn:active { transform: scale(0.95); }
+        
+        /* 自定義捲動軸 (可選) */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
     </style>
 </head>
-<body class="min-h-screen pb-10">
+<body class="min-h-screen wano-bg relative">
+    
+    <div class="fixed inset-0 bg-white/70 -z-10"></div>
 
-    <div id="view-home" class="max-w-md mx-auto px-6 pt-10">
-        <header class="mb-10 text-center">
-            <h1 class="text-3xl font-bold text-sky-900 tracking-tighter">旅結 <span class="text-amber-500 italic">Tabi Pro</span></h1>
-            <p class="text-gray-400 text-[10px] mt-1 uppercase tracking-widest">Journey Manager</p>
+    <div id="view-home" class="relative max-w-md mx-auto px-6 pt-12 pb-10 z-10">
+        <header class="mb-12 text-center">
+            <h1 class="text-4xl font-extrabold text-sky-950 tracking-tighter">旅結 <span class="text-amber-500 italic">Tabi Pro</span></h1>
+            <p class="text-gray-500 text-[10px] mt-2 uppercase tracking-[0.4em]">Journey Management</p>
         </header>
 
-        <div class="bg-white p-6 rounded-[2rem] shadow-xl mb-8 border border-sky-50">
-            <h3 class="text-sm font-bold text-gray-700 mb-4">建立新旅程</h3>
-            <input type="text" id="newTripInput" placeholder="例如：2026 北海道之行" class="w-full bg-gray-50 px-5 py-4 rounded-2xl focus:outline-none mb-3 border-none">
-            <button onclick="h_createTrip()" class="w-full bg-sky-900 text-white py-4 rounded-2xl font-bold shadow-lg action-btn">開始新旅程</button>
+        <div class="glass p-7 rounded-[2.5rem] shadow-xl shadow-sky-950/5 mb-10 border border-white">
+            <h3 class="text-xs font-bold text-gray-700 mb-5 flex items-center gap-2">
+                <span class="w-1 h-4 bg-amber-400 rounded-full"></span> 建立新旅程
+            </h3>
+            <input type="text" id="newTripInput" placeholder="例如：2026 和之國之行" class="w-full bg-white/50 px-6 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-sky-100 mb-4 border-none text-sm shadow-inner">
+            <button onclick="h_createTrip()" class="w-full bg-sky-950 text-white py-4 rounded-2xl font-bold shadow-lg shadow-sky-950/10 action-btn transition-all">開始新旅程</button>
         </div>
 
-        <h3 class="text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-widest">我的旅程清單</h3>
-        <div id="h_tripList" class="space-y-4"></div>
+        <h3 class="text-[11px] font-bold text-gray-500 mb-5 uppercase tracking-widest pl-2">我的旅程清單</h3>
+        <div id="h_tripList" class="space-y-4">
+            </div>
     </div>
 
-    <div id="view-detail" class="hidden max-w-md mx-auto px-6 pt-6">
-        <div class="flex items-center justify-between mb-4">
-            <button onclick="h_goHome()" class="text-sky-800 text-sm flex items-center gap-1 font-medium">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg> 返回
+    <div id="view-detail" class="hidden relative max-w-md mx-auto px-6 pt-6 pb-10 z-10">
+        <div class="flex items-center justify-between mb-5">
+            <button onclick="h_goHome()" class="text-sky-900 text-sm flex items-center gap-1.5 font-medium action-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg> 返回清單
             </button>
-            <h2 id="d_tripTitle" class="text-lg font-bold text-sky-900 truncate max-w-[150px]"></h2>
-            <button onclick="h_copyMsg()" class="text-emerald-600 text-xs font-bold bg-emerald-50 px-3 py-1 rounded-full action-btn">分享結算</button>
+            <h2 id="d_tripTitle" class="text-lg font-extrabold text-sky-950 truncate max-w-[150px]"></h2>
+            <button onclick="h_copyMsg()" class="text-emerald-700 text-[11px] font-bold bg-emerald-50 px-4 py-1.5 rounded-full shadow-sm action-btn">分享結算單</button>
         </div>
 
-        <div class="bg-white rounded-[2rem] p-6 shadow-xl mb-6 border border-sky-50">
-            <div class="h-40 w-full mb-4"><canvas id="d_chart"></canvas></div>
+        <div class="glass rounded-[2.5rem] p-7 shadow-xl shadow-sky-950/5 mb-6 border border-white">
+            <div class="h-40 w-full mb-4">
+                <canvas id="d_chart"></canvas>
+            </div>
             <div class="text-center">
-                <p class="text-[10px] text-gray-400 uppercase tracking-widest">目前總支出</p>
-                <h3 id="d_totalAmt" class="text-3xl font-bold text-sky-900">$ 0.00</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">目前總開支</p>
+                <h3 id="d_totalAmt" class="text-4xl font-extrabold text-sky-950 tracking-tighter">$ 0.00</h3>
             </div>
         </div>
 
-        <div class="flex mb-6 border-b border-gray-100 text-sm overflow-x-auto">
-            <button onclick="h_switchTab('add')" id="tab-add" class="flex-1 py-3 tab-active">記帳</button>
-            <button onclick="h_switchTab('list')" id="tab-list" class="flex-1 py-3 text-gray-400">紀錄</button>
-            <button onclick="h_switchTab('settle')" id="tab-settle" class="flex-1 py-3 text-gray-400">結算</button>
-            <button onclick="h_switchTab('mem')" id="tab-mem" class="flex-1 py-3 text-gray-400">成員</button>
+        <div class="flex mb-6 border-b border-gray-100 text-sm overflow-x-auto no-scrollbar glass rounded-t-2xl px-2">
+            <button onclick="h_switchTab('add')" id="tab-add" class="flex-1 py-4 tab-active whitespace-nowrap">記帳</button>
+            <button onclick="h_switchTab('list')" id="tab-list" class="flex-1 py-4 text-gray-400 whitespace-nowrap">紀錄</button>
+            <button onclick="h_switchTab('settle')" id="tab-settle" class="flex-1 py-4 text-gray-400 whitespace-nowrap">結算</button>
+            <button onclick="h_switchTab('mem')" id="tab-mem" class="flex-1 py-4 text-gray-400 whitespace-nowrap">成員</button>
         </div>
 
         <div id="p-add" class="space-y-4">
             <div class="flex gap-2">
-                <select id="i_cat" class="bg-white px-3 py-4 rounded-2xl shadow-sm text-sm border-none ring-1 ring-gray-100">
+                <select id="i_cat" class="bg-white/90 px-3 py-4 rounded-2xl shadow-sm text-sm border-none ring-1 ring-gray-100 font-medium">
                     <option value="食">🍴 食</option><option value="住">🏨 住</option><option value="行">🚗 行</option><option value="玩">🎟️ 玩</option><option value="購">🛍️ 購</option>
                 </select>
-                <input type="text" id="i_name" placeholder="項目名稱" class="flex-1 bg-white px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100">
+                <input type="text" id="i_name" placeholder="項目名稱 (如：拉麵)" class="flex-1 bg-white/90 px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100 text-sm shadow-inner">
             </div>
-            <input type="number" id="i_amt" placeholder="金額 (HKD)" class="w-full bg-white px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100">
-            <div class="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-50 space-y-4">
-                <div class="flex justify-between items-center text-sm"><span class="font-bold text-gray-500">誰付的？</span><select id="i_payer" class="bg-sky-50 px-3 py-2 rounded-xl text-sky-900 font-bold border-none"></select></div>
-                <hr class="border-gray-50">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">為誰代付？</p>
-                <div id="i_splitList" class="grid grid-cols-2 gap-3"></div>
+            <input type="number" id="i_amt" placeholder="金額 (HKD)" class="w-full bg-white/90 px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100 text-base font-bold text-sky-950 shadow-inner">
+            
+            <div class="bg-white/90 p-6 rounded-3xl shadow-sm ring-1 ring-gray-50 space-y-4">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-bold text-gray-500">誰付錢？</span>
+                    <select id="i_payer" class="bg-sky-50 px-3 py-2 rounded-xl text-sky-950 font-bold text-xs border-none"></select>
+                </div>
+                <hr class="border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">為誰代付？</p>
+                <div id="i_splitList" class="grid grid-cols-2 gap-3 pl-1"></div>
             </div>
-            <button onclick="h_saveExpense()" class="w-full bg-sky-900 text-white py-5 rounded-3xl font-bold shadow-lg action-btn">記入帳目</button>
+            <button onclick="h_saveExpense()" class="w-full bg-sky-950 text-white py-5 rounded-3xl font-bold shadow-lg action-btn transition-all">記入帳目</button>
         </div>
 
         <div id="p-list" class="hidden space-y-3">
-            <button onclick="h_clearAll()" class="w-full py-2 text-[10px] text-red-400 border border-red-100 rounded-xl mb-2">清空所有紀錄</button>
+            <button onclick="h_clearAll()" class="w-full py-2.5 text-[10px] text-red-500 border border-red-100 rounded-xl mb-3 font-medium bg-red-50/50 action-btn">清空當前旅程紀錄</button>
             <div id="d_expList" class="space-y-3"></div>
         </div>
-        <div id="p-settle" class="hidden space-y-3"><div id="d_settleList" class="bg-white rounded-3xl p-6 space-y-4 text-sm"></div></div>
+
+        <div id="p-settle" class="hidden space-y-3">
+            <div id="d_settleList" class="bg-white/95 rounded-3xl p-7 shadow-sm border border-sky-50 space-y-4 text-sm"></div>
+        </div>
+
         <div id="p-mem" class="hidden space-y-4">
-            <div class="bg-white p-6 rounded-3xl shadow-sm">
-                <p class="text-sm font-bold mb-4">新增旅伴</p>
-                <div class="flex gap-2 mb-4"><input type="text" id="i_newMem" placeholder="名字" class="flex-1 bg-gray-50 px-4 py-2 rounded-xl text-sm border-none"><button onclick="h_addMember()" class="bg-sky-800 text-white px-4 py-2 rounded-xl text-sm">加入</button></div>
-                <div id="d_memList" class="flex flex-wrap gap-2"></div>
+            <div class="bg-white/95 p-7 rounded-3xl shadow-sm border border-sky-50">
+                <p class="text-sm font-bold mb-5 flex items-center gap-1.5"><span class="w-1 h-3.5 bg-sky-700 rounded-full"></span> 管理成員名單</p>
+                <div class="flex gap-2 mb-5">
+                    <input type="text" id="i_newMem" placeholder="名字" class="flex-1 bg-gray-50 px-4 py-2.5 rounded-xl text-sm border-none focus:ring-1 focus:ring-sky-100">
+                    <button onclick="h_addMember()" class="bg-sky-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold action-btn">加入</button>
+                </div>
+                <div id="d_memList" class="flex flex-wrap gap-2.5 pl-1"></div>
             </div>
         </div>
     </div>
 
     <script>
-        let allTrips = JSON.parse(localStorage.getItem('tabi_v4_data')) || [];
+        // --- 核心邏輯 (完全保留原本結構與 Bug 修正) ---
+        let allTrips = JSON.parse(localStorage.getItem('tabi_v5_background')) || [];
         let activeIdx = -1;
         let myChart = null;
 
         function h_saveData() {
-            localStorage.setItem('tabi_v4_data', JSON.stringify(allTrips));
+            localStorage.setItem('tabi_v5_background', JSON.stringify(allTrips));
             h_renderTripList();
             if(activeIdx !== -1) h_refreshDetail();
         }
@@ -101,11 +144,10 @@
         function h_createTrip() {
             const name = document.getElementById('newTripInput').value.trim();
             if(!name) return;
-            const newTrip = { name, members: ["我"], expenses: [] };
-            allTrips.push(newTrip);
+            allTrips.push({ name, members: ["我"], expenses: [] });
             h_saveData();
             document.getElementById('newTripInput').value = '';
-            // 關鍵修正：建立後立刻進入該旅程
+            // 建立後立即進入
             h_openTrip(allTrips.length - 1);
         }
 
@@ -127,11 +169,14 @@
         function h_renderTripList() {
             const container = document.getElementById('h_tripList');
             container.innerHTML = allTrips.length ? allTrips.map((t, i) => `
-                <div onclick="h_openTrip(${i})" class="bg-white p-5 rounded-[2rem] shadow-sm flex justify-between items-center cursor-pointer border border-sky-50">
-                    <div><h4 class="font-bold text-sky-900">${t.name}</h4><p class="text-[10px] text-gray-400">${t.members.length} 位成員 · ${t.expenses.length} 筆開支</p></div>
-                    <button onclick="h_deleteTrip(${i}, event)" class="text-gray-300 hover:text-red-400 text-xs">刪除</button>
+                <div onclick="h_openTrip(${i})" class="glass p-6 rounded-[2rem] shadow-sm flex justify-between items-center cursor-pointer border border-white action-btn">
+                    <div>
+                        <h4 class="font-extrabold text-sky-950">${t.name}</h4>
+                        <p class="text-[10px] text-gray-500 mt-0.5">${t.members.length} 位旅伴 · ${t.expenses.length} 筆項目</p>
+                    </div>
+                    <button onclick="h_deleteTrip(${i}, event)" class="text-gray-300 hover:text-red-500 text-sm px-2">刪除</button>
                 </div>
-            `).join('') : '<p class="text-center text-gray-400 py-10 text-xs">輸入旅程名字開始記帳！</p>';
+            `).join('') : '<p class="text-center text-gray-500 py-12 text-xs bg-white/50 rounded-2xl">尚無旅程，在上方輸入名字開始！</p>';
         }
 
         function h_refreshDetail() {
@@ -142,32 +187,38 @@
             document.getElementById('d_totalAmt').innerText = `$ ${total.toFixed(2)}`;
             document.getElementById('i_payer').innerHTML = trip.members.map(m => `<option value="${m}">${m}</option>`).join('');
             document.getElementById('i_splitList').innerHTML = trip.members.map(m => `
-                <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-2xl text-[10px] font-bold cursor-pointer">
-                    <input type="checkbox" value="${m}" checked class="w-4 h-4 accent-sky-800"> ${m}
+                <label class="flex items-center gap-2.5 p-3 bg-white/50 rounded-2xl text-[10px] font-bold cursor-pointer transition-colors hover:bg-white ring-1 ring-gray-100">
+                    <input type="checkbox" value="${m}" checked class="w-4 h-4 accent-sky-900 border-none rounded"> ${m}
                 </label>
             `).join('');
-            document.getElementById('d_memList').innerHTML = trip.members.map(m => `<span class="bg-sky-50 text-sky-800 px-3 py-1 rounded-full text-xs font-bold">${m}</span>`).join('');
+            document.getElementById('d_memList').innerHTML = trip.members.map(m => `<span class="bg-sky-50 text-sky-800 px-3.5 py-1.5 rounded-full text-xs font-bold">${m}</span>`).join('');
             document.getElementById('d_expList').innerHTML = trip.expenses.map((e, idx) => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center">
-                    <div><p class="text-xs font-bold text-sky-900">${e.cat} | ${e.name}</p><p class="text-[9px] text-gray-400">由 ${e.payer} 代付</p></div>
-                    <div class="flex items-center gap-3"><span class="font-bold text-sm">$${e.amt}</span><button onclick="h_deleteExp(${idx})" class="text-red-200">×</button></div>
+                <div class="bg-white/90 p-4.5 rounded-2xl shadow-sm flex justify-between items-center border border-gray-50">
+                    <div>
+                        <p class="text-xs font-bold text-sky-950">${e.cat} | ${e.name}</p>
+                        <p class="text-[9px] text-gray-400 mt-0.5">付款: ${e.payer} | 分擔: ${e.split.length} 人</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-sm text-sky-950">$${e.amt.toFixed(1)}</span>
+                        <button onclick="h_deleteExp(${idx})" class="text-red-200 text-lg active:scale-125 transition-transform">×</button>
+                    </div>
                 </div>
             `).reverse().join('');
             h_updateChart();
         }
 
         function h_saveExpense() {
-            const name = document.getElementById('i_name').value || "未命名項目";
+            const name = document.getElementById('i_name').value || "未命名";
             const amt = parseFloat(document.getElementById('i_amt').value);
             const cat = document.getElementById('i_cat').value;
             const payer = document.getElementById('i_payer').value;
             const split = Array.from(document.querySelectorAll('#i_splitList input:checked')).map(c => c.value);
-            if(!amt || !split.length) return alert("請填寫金額與分擔者");
+            if(!amt || !split.length) return alert("資訊不足");
             allTrips[activeIdx].expenses.push({ name, amt, cat, payer, split });
             document.getElementById('i_name').value = '';
             document.getElementById('i_amt').value = '';
             h_saveData();
-            alert("已記錄！");
+            alert("已記入帳目！");
         }
 
         function h_deleteExp(idx) {
@@ -177,11 +228,11 @@
 
         function h_deleteTrip(idx, e) {
             e.stopPropagation();
-            if(confirm("刪除旅程？")) { allTrips.splice(idx, 1); h_saveData(); }
+            if(confirm("確定刪除此旅程？")) { allTrips.splice(idx, 1); h_saveData(); }
         }
 
         function h_clearAll() {
-            if(confirm("清空帳目？")) { allTrips[activeIdx].expenses = []; h_saveData(); }
+            if(confirm("清空當前所有紀錄？成員名單會保留。")) { allTrips[activeIdx].expenses = []; h_saveData(); }
         }
 
         function h_addMember() {
@@ -213,12 +264,15 @@
                 bal[e.payer] += e.amt; e.split.forEach(p => { if(bal.hasOwnProperty(p)) bal[p] -= s; });
             });
             const res = document.getElementById('d_settleList');
-            res.innerHTML = '<p class="text-[10px] font-bold text-gray-400 text-center uppercase mb-2">建議清數方案</p>';
+            res.innerHTML = '<p class="text-[10px] font-bold text-gray-400 text-center uppercasetracking-widest mb-3">最佳轉帳方案 (HKD)</p>';
             let g = [], r = [];
             for(let p in bal) { if(bal[p] < -0.1) g.push({n:p, a:Math.abs(bal[p])}); else if(bal[p] > 0.1) r.push({n:p, a:bal[p]}); }
-            if(!g.length) res.innerHTML += '<p class="text-center py-4 text-gray-300">帳目已平整</p>';
+            if(!g.length) res.innerHTML += '<p class="text-center py-6 text-gray-400 bg-gray-50 rounded-xl">目前帳目已平衡</p>';
             g.forEach(gv => { r.forEach(rv => { if(gv.a > 0 && rv.a > 0) { let v = Math.min(gv.a, rv.a);
-                res.innerHTML += `<div class="flex justify-between p-4 bg-sky-50 rounded-2xl"><span><b>${gv.n}</b> ➔ <b>${rv.n}</b></span><b>$${v.toFixed(2)}</b></div>`;
+                res.innerHTML += `<div class="flex justify-between items-center p-4 bg-sky-50 rounded-xl">
+                    <span class="text-xs font-medium"><b>${gv.n}</b> ➔ <b>${rv.n}</b></span>
+                    <b class="text-sky-950">$${v.toFixed(2)}</b>
+                </div>`;
                 gv.a -= v; rv.a -= v;
             }})});
         }
@@ -234,7 +288,8 @@
             let g = [], r = [];
             for(let p in bal) { if(bal[p] < -0.1) g.push({n:p, a:Math.abs(bal[p])}); else if(bal[p] > 0.1) r.push({n:p, a:bal[p]}); }
             g.forEach(gv => { r.forEach(rv => { if(gv.a > 0 && rv.a > 0) { let v = Math.min(gv.a, rv.a); msg += `👉 ${gv.n} ➔ ${rv.n} : $${v.toFixed(2)}\n`; gv.a -= v; rv.a -= v; }})});
-            navigator.clipboard.writeText(msg).then(() => alert("已複製結算訊息！"));
+            msg += `\n大家旅途愉快！`;
+            navigator.clipboard.writeText(msg).then(() => alert("已生成訊息並複製！"));
         }
 
         function h_updateChart() {
@@ -245,11 +300,12 @@
             if(myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'doughnut',
-                data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#fbbf24', '#38bdf8', '#818cf8', '#f87171', '#34d399'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 } } } }, cutout: '70%' }
+                data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#fbbf24', '#38bdf8', '#818cf8', '#f87171', '#34d399'], borderWidth: 0, hoverOffset: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 }, color: '#334155' } } }, cutout: '70%', animation: { animateScale: true } }
             });
         }
 
+        // 初始化
         h_renderTripList();
     </script>
 </body>
