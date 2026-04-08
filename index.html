@@ -11,22 +11,20 @@
         :root { --navy: #0369a1; }
         html, body { overscroll-behavior: none; height: 100%; width: 100%; overflow-x: hidden; margin: 0; padding: 0; }
         body { font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
         .wano-bg { background-image: url('https://i.imgur.com/DRcZvHV.png'); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; }
         #launch-screen { background-image: url('https://i.imgur.com/cNRBKIW.jpeg'); background-size: cover; background-position: center; z-index: 100; transition: opacity 0.6s ease-out; }
-        
         .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); width: 100%; box-sizing: border-box; overflow: hidden; }
-        
         input, select { box-sizing: border-box !important; font-size: 16px !important; max-width: 100%; }
         .tab-active { color: var(--navy); border-bottom: 3px solid var(--navy); font-weight: 700; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .safe-pb { padding-bottom: env(safe-area-inset-bottom, 30px); }
-        
         #i_splitList { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .modal-bg { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body class="wano-bg">
     
+    <!-- 啟動頁 -->
     <div id="launch-screen" class="fixed inset-0 flex flex-col items-center justify-end pb-32">
         <button onclick="enterApp()" class="bg-white/10 backdrop-blur-xl text-white border border-white/30 px-14 py-4 rounded-full font-bold text-xl tracking-[0.3em] shadow-2xl active:scale-90 transition-transform">
             ENTER
@@ -36,25 +34,23 @@
     <div class="fixed inset-0 bg-white/60 -z-10"></div>
 
     <div id="app-content" class="hidden opacity-0 transition-opacity duration-500">
-        
+        <!-- 主頁 -->
         <div id="view-home" class="relative max-w-md mx-auto px-5 pt-12 pb-20 z-10">
             <header class="mb-10 text-center">
                 <h1 class="text-3xl font-extrabold text-sky-950 tracking-tighter">開支助手 <span class="text-amber-500 italic">Pro</span></h1>
                 <p class="text-gray-500 text-[10px] mt-1 uppercase tracking-[0.4em]">Expense Manager</p>
             </header>
-
             <div class="glass p-6 rounded-[2.5rem] shadow-xl mb-10">
                 <h3 class="text-xs font-bold text-gray-700 mb-4 flex items-center gap-2">
                     <span class="w-1 h-3.5 bg-amber-400 rounded-full"></span> 建立新項目
                 </h3>
-                <input type="text" id="newTripInput" placeholder="項目名稱 (如：日本旅行)" class="w-full bg-white px-5 py-4 rounded-2xl focus:outline-none mb-4 border border-gray-100 shadow-sm">
+                <input type="text" id="newTripInput" placeholder="項目名稱 (如：日本之旅)" class="w-full bg-white px-5 py-4 rounded-2xl focus:outline-none mb-4 border border-gray-100 shadow-sm">
                 <button onclick="h_createTrip()" class="w-full bg-sky-950 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95">開始使用</button>
             </div>
-
-            <h3 class="text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-widest pl-2">My History</h3>
             <div id="h_tripList" class="space-y-4"></div>
         </div>
 
+        <!-- 詳情頁 -->
         <div id="view-detail" class="hidden relative max-w-md mx-auto px-5 pt-6 safe-pb z-10">
             <div class="flex items-center justify-between mb-5">
                 <button onclick="h_goHome()" class="text-sky-900 text-sm flex items-center gap-1 font-bold shrink-0">
@@ -67,7 +63,7 @@
             <div class="glass rounded-[2.5rem] p-6 shadow-xl mb-5 border border-white">
                 <div class="h-40 w-full mb-3"><canvas id="d_chart"></canvas></div>
                 <div class="text-center">
-                    <p class="text-[9px] text-gray-400 uppercase tracking-widest mb-0.5">Total Amount</p>
+                    <p class="text-[9px] text-gray-400 uppercase tracking-widest mb-0.5">Total Amount (HKD)</p>
                     <h3 id="d_totalAmt" class="text-3xl font-black text-sky-950">$ 0.00</h3>
                 </div>
             </div>
@@ -79,38 +75,41 @@
                 <button onclick="h_switchTab('mem')" id="tab-mem" class="flex-1 py-4 text-gray-400">成員</button>
             </div>
 
+            <!-- 記帳頁 -->
             <div id="p-add" class="space-y-4">
                 <div class="flex gap-2">
-                    <select id="i_cat" class="w-16 flex-none bg-white/95 px-1 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100 text-center font-bold">
+                    <select id="i_cat" class="w-16 flex-none bg-white px-1 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100 text-center font-bold">
                         <option value="食">🍴</option><option value="住">🏨</option><option value="行">🚗</option><option value="玩">🎟️</option><option value="購">🛍️</option>
                     </select>
                     <div class="flex-1 min-w-0">
-                        <input type="text" id="i_name" placeholder="項目名稱 (如：新宿拉麵)" class="w-full bg-white/95 px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100">
+                        <input type="text" id="i_name" placeholder="項目名稱 (如：拉麵)" class="w-full bg-white px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100">
                     </div>
                 </div>
-                <input type="number" id="i_amt" inputmode="decimal" placeholder="金額 (HKD)" class="w-full bg-white/95 px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100 font-bold">
+                <div class="relative w-full">
+                    <input type="number" id="i_amt" inputmode="decimal" placeholder="金額 (HKD)" class="w-full bg-white px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100 font-bold pr-16">
+                    <button onclick="toggleFxModal(true)" class="absolute right-3 top-1/2 -translate-y-1/2 bg-sky-100 text-sky-700 text-[10px] font-bold px-2 py-1.5 rounded-lg shadow-sm">🌐 匯率</button>
+                </div>
                 
                 <div class="glass p-5 rounded-3xl shadow-sm ring-1 ring-gray-50 space-y-4">
                     <div class="flex justify-between items-center text-sm font-bold">
-                        <span class="text-gray-500">誰付款？</span>
+                        <span class="text-gray-500 text-xs">誰付款？</span>
                         <select id="i_payer" class="w-auto min-w-[100px] bg-sky-50 px-3 py-2 rounded-xl text-sky-950 border-none"></select>
                     </div>
                     <hr class="border-gray-100">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">分擔對象</p>
                     <div id="i_splitList"></div>
                 </div>
-                <button onclick="h_saveExpense()" class="w-full bg-sky-950 text-white py-5 rounded-3xl font-bold shadow-lg active:opacity-80">記錄開支</button>
+                <button onclick="h_saveExpense()" class="w-full bg-sky-950 text-white py-5 rounded-3xl font-bold shadow-lg active:opacity-80 transition-all">記錄開支</button>
             </div>
 
+            <!-- 紀錄、結算、成員頁 -->
             <div id="p-list" class="hidden space-y-3">
                 <button onclick="h_clearAll()" class="w-full py-2.5 text-[10px] text-red-500 border border-red-100 rounded-xl mb-3 font-bold bg-white/50">清空所有紀錄</button>
                 <div id="d_expList" class="space-y-3"></div>
             </div>
-
             <div id="p-settle" class="hidden space-y-3">
                 <div id="d_settleList" class="bg-white/95 rounded-3xl p-6 space-y-3 shadow-sm border border-gray-100"></div>
             </div>
-
             <div id="p-mem" class="hidden space-y-4">
                 <div class="bg-white/95 p-6 rounded-3xl shadow-sm border border-gray-50">
                     <p class="text-sm font-bold mb-4">管理成員</p>
@@ -118,10 +117,31 @@
                         <div class="flex-1 min-w-0">
                             <input type="text" id="i_newMem" placeholder="旅伴名字" class="w-full bg-gray-50 px-4 py-3 rounded-xl border-none ring-1 ring-gray-100 focus:ring-sky-200">
                         </div>
-                        <button onclick="h_addMember()" class="bg-sky-800 text-white px-6 py-3 rounded-xl text-xs font-bold shrink-0 active:scale-95">加入</button>
+                        <button onclick="h_addMember()" class="bg-sky-800 text-white px-6 py-3 rounded-xl text-xs font-bold shrink-0">加入</button>
                     </div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">現有成員</p>
                     <div id="d_memList" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 匯率轉換 Modal -->
+    <div id="fx-modal" class="hidden fixed inset-0 z-[200] modal-bg flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-xs rounded-[2.5rem] p-8 shadow-2xl">
+            <h4 class="text-center font-bold text-sky-950 mb-6">幣值換算 (➔ HKD)</h4>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">外幣金額</label>
+                    <input type="number" id="fx_foreign" placeholder="例如: 1000" class="w-full bg-gray-50 p-4 rounded-2xl border-none ring-1 ring-gray-100 mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">匯率 (1 外幣 = ? HKD)</label>
+                    <input type="number" id="fx_rate" placeholder="日圓填 0.052, 歐元填 8.5" class="w-full bg-gray-50 p-4 rounded-2xl border-none ring-1 ring-gray-100 mt-1">
+                </div>
+                <div class="pt-2">
+                    <button onclick="applyFx()" class="w-full bg-sky-950 text-white py-4 rounded-2xl font-bold">確定轉換</button>
+                    <button onclick="toggleFxModal(false)" class="w-full text-gray-400 text-xs mt-4">取消</button>
                 </div>
             </div>
         </div>
@@ -135,11 +155,11 @@
             setTimeout(() => { launch.classList.add('hidden'); content.classList.remove('hidden'); setTimeout(() => content.style.opacity = '1', 50); }, 600);
         }
 
-        let allTrips = JSON.parse(localStorage.getItem('exp_v5_final')) || [];
+        let allTrips = JSON.parse(localStorage.getItem('exp_v6_fx')) || [];
         let activeIdx = -1;
         let myChart = null;
 
-        function h_saveData() { localStorage.setItem('exp_v5_final', JSON.stringify(allTrips)); h_renderTripList(); if(activeIdx !== -1) h_refreshDetail(); }
+        function h_saveData() { localStorage.setItem('exp_v6_fx', JSON.stringify(allTrips)); h_renderTripList(); if(activeIdx !== -1) h_refreshDetail(); }
 
         function h_createTrip() {
             const name = document.getElementById('newTripInput').value.trim();
@@ -154,7 +174,6 @@
             activeIdx = idx;
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-detail').classList.remove('hidden');
-            window.scrollTo(0, 0);
             h_refreshDetail();
             h_switchTab('add');
         }
@@ -169,11 +188,11 @@
         function h_renderTripList() {
             const container = document.getElementById('h_tripList');
             container.innerHTML = allTrips.length ? allTrips.map((t, i) => `
-                <div onclick="h_openTrip(${i})" class="glass p-5 rounded-[2rem] flex justify-between items-center active:scale-95 transition-transform">
+                <div onclick="h_openTrip(${i})" class="glass p-5 rounded-[2rem] flex justify-between items-center active:scale-95 transition-transform shadow-sm">
                     <div class="min-w-0 flex-1 mr-4"><h4 class="font-bold text-sky-950 text-sm truncate">${t.name}</h4><p class="text-[10px] text-gray-400 mt-1">${t.members.length} 人 · ${t.expenses.length} 筆</p></div>
                     <button onclick="h_deleteTrip(${i}, event)" class="text-gray-300 text-xs px-2 shrink-0">刪除</button>
                 </div>
-            `).join('') : '<p class="text-center text-gray-400 py-10 text-xs">尚無項目紀錄</p>';
+            `).join('') : '<p class="text-center text-gray-400 py-10 text-xs italic">尚無項目，點擊上方開始</p>';
         }
 
         function h_refreshDetail() {
@@ -182,34 +201,25 @@
             document.getElementById('d_tripTitle').innerText = trip.name;
             const total = trip.expenses.reduce((s, e) => s + e.amt, 0);
             document.getElementById('d_totalAmt').innerText = `$ ${total.toFixed(2)}`;
-            
-            // 渲染付款人下拉
             document.getElementById('i_payer').innerHTML = trip.members.map(m => `<option value="${m}">${m}</option>`).join('');
-            
-            // 渲染分擔對象
             document.getElementById('i_splitList').innerHTML = trip.members.map(m => `
                 <label class="flex items-center gap-2 p-3 bg-white/80 rounded-xl text-[11px] font-bold shadow-sm ring-1 ring-gray-100">
                     <input type="checkbox" value="${m}" checked class="w-4 h-4 accent-sky-900">
                     <span class="truncate">${m}</span>
                 </label>
             `).join('');
-            
-            // 渲染成員清單 (帶移除按鍵)
             document.getElementById('d_memList').innerHTML = trip.members.map((m, i) => `
                 <div class="flex items-center gap-1 bg-sky-50 text-sky-800 pl-3 pr-1 py-1 rounded-full text-[10px] font-bold border border-sky-100">
                     <span>${m}</span>
                     ${trip.members.length > 1 ? `<button onclick="h_removeMember(${i})" class="w-5 h-5 flex items-center justify-center text-sky-300 hover:text-red-400 text-sm font-light">×</button>` : ''}
                 </div>
             `).join('');
-            
-            // 紀錄清單
             document.getElementById('d_expList').innerHTML = trip.expenses.map((e, idx) => `
                 <div class="bg-white/95 p-4 rounded-2xl flex justify-between items-center shadow-sm">
                     <div class="min-w-0 flex-1"><p class="text-xs font-bold text-sky-950 truncate">${e.cat} | ${e.name}</p><p class="text-[9px] text-gray-400">付: ${e.payer} · 分: ${e.split.length}人</p></div>
-                    <div class="flex items-center gap-3 shrink-0 ml-2"><span class="font-bold text-sm text-sky-900">$${e.amt.toFixed(1)}</span><button onclick="h_deleteExp(${idx})" class="text-red-200 text-lg px-2">×</button></div>
+                    <div class="flex items-center gap-3 shrink-0 ml-2"><span class="font-bold text-sm text-sky-900">$${e.amt.toFixed(1)}</span><button onclick="h_deleteExp(${idx})" class="text-red-200 text-lg px-2 active:scale-125 transition-transform">×</button></div>
                 </div>
             `).reverse().join('');
-            
             h_updateChart();
         }
 
@@ -229,27 +239,17 @@
         function h_deleteExp(idx) { allTrips[activeIdx].expenses.splice(allTrips[activeIdx].expenses.length - 1 - idx, 1); h_saveData(); }
         function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("確定刪除此項目？")) { allTrips.splice(idx, 1); h_saveData(); } }
         function h_clearAll() { if(confirm("清空紀錄？")) { allTrips[activeIdx].expenses = []; h_saveData(); } }
-        
         function h_addMember() {
             const n = document.getElementById('i_newMem').value.trim();
             if(n && !allTrips[activeIdx].members.includes(n)) { allTrips[activeIdx].members.push(n); document.getElementById('i_newMem').value = ''; h_saveData(); }
         }
-
         function h_removeMember(idx) {
-            const name = allTrips[activeIdx].members[idx];
-            if(confirm(`從此旅程移除成員「${name}」？\n注意：相關支出紀錄不會自動更改。`)) {
-                allTrips[activeIdx].members.splice(idx, 1);
-                h_saveData();
-            }
+            if(confirm(`移除成員「${allTrips[activeIdx].members[idx]}」？`)) { allTrips[activeIdx].members.splice(idx, 1); h_saveData(); }
         }
 
         function h_switchTab(tab) {
-            ['add', 'list', 'settle', 'mem'].forEach(t => {
-                document.getElementById(`p-${t}`).classList.add('hidden');
-                document.getElementById(`tab-${t}`).className = "flex-1 py-4 text-gray-400";
-            });
-            document.getElementById(`p-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-${tab}`).className = "flex-1 py-4 tab-active";
+            ['add', 'list', 'settle', 'mem'].forEach(t => { document.getElementById(`p-${t}`).classList.add('hidden'); document.getElementById(`tab-${t}`).className = "flex-1 py-4 text-gray-400"; });
+            document.getElementById(`p-${tab}`).classList.remove('hidden'); document.getElementById(`tab-${tab}`).className = "flex-1 py-4 tab-active";
         }
 
         function h_settleUI() {
@@ -262,11 +262,11 @@
                 e.split.forEach(p => { if(bal.hasOwnProperty(p)) bal[p] -= s; }); 
             });
             const res = document.getElementById('d_settleList');
-            res.innerHTML = '<p class="text-[10px] font-bold text-gray-400 text-center uppercase mb-4 tracking-widest">最佳轉帳方案</p>';
+            res.innerHTML = '<p class="text-[10px] font-bold text-gray-400 text-center uppercase mb-4 tracking-widest">最佳轉帳方案 (HKD)</p>';
             let g = [], r = [];
             for(let p in bal) { if(bal[p] < -0.1) g.push({n:p, a:Math.abs(bal[p])}); else if(bal[p] > 0.1) r.push({n:p, a:bal[p]}); }
             if(!g.length) res.innerHTML += '<p class="text-center py-10 text-gray-400 text-xs italic">帳目已平</p>';
-            g.forEach(gv => { r.forEach(rv => { if(gv.a > 0 && rv.a > 0) { let v = Math.min(gv.a, rv.a); res.innerHTML += `<div class="flex justify-between items-center p-4 bg-sky-50 rounded-2xl border border-sky-100 shadow-sm"><span class="text-xs font-bold text-sky-950"><b>${gv.n}</b> ➔ <b>${rv.n}</b></span><b class="text-sky-900">$${v.toFixed(2)}</b></div>`; gv.a -= v; rv.a -= v; }})});
+            g.forEach(gv => { r.forEach(rv => { if(gv.a > 0 && rv.a > 0) { let v = Math.min(gv.a, rv.a); res.innerHTML += `<div class="flex justify-between items-center p-4 bg-sky-50 rounded-2xl border border-sky-100 shadow-sm mb-2"><span class="text-xs font-bold text-sky-950"><b>${gv.n}</b> ➔ <b>${rv.n}</b></span><b class="text-sky-900">$${v.toFixed(2)}</b></div>`; gv.a -= v; rv.a -= v; }})});
         }
 
         function h_copyMsg() {
@@ -277,7 +277,7 @@
             let g = [], r = [];
             for(let p in bal) { if(bal[p] < -0.1) g.push({n:p, a:Math.abs(bal[p])}); else if(bal[p] > 0.1) r.push({n:p, a:bal[p]}); }
             g.forEach(gv => { r.forEach(rv => { if(gv.a > 0 && rv.a > 0) { let v = Math.min(gv.a, rv.a); msg += `👉 ${gv.n} ➔ ${rv.n} : $${v.toFixed(2)}\n`; gv.a -= v; rv.a -= v; }})});
-            navigator.clipboard.writeText(msg).then(() => alert("已複製結算清單"));
+            navigator.clipboard.writeText(msg).then(() => alert("已複製！"));
         }
 
         function h_updateChart() {
@@ -287,6 +287,19 @@
             const ctx = document.getElementById('d_chart').getContext('2d');
             if(myChart) myChart.destroy();
             myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#fbbf24', '#38bdf8', '#818cf8', '#f87171', '#34d399'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 }, color: '#334155' } } }, cutout: '75%' } });
+        }
+
+        // 匯率轉換邏輯
+        function toggleFxModal(show) { document.getElementById('fx-modal').classList.toggle('hidden', !show); }
+        function applyFx() {
+            const f = parseFloat(document.getElementById('fx_foreign').value);
+            const r = parseFloat(document.getElementById('fx_rate').value);
+            if(f && r) {
+                document.getElementById('i_amt').value = (f * r).toFixed(2);
+                toggleFxModal(false);
+                document.getElementById('fx_foreign').value = '';
+                document.getElementById('fx_rate').value = '';
+            } else { alert("請輸入有效金額與匯率"); }
         }
 
         h_renderTripList();
