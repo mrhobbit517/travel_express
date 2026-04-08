@@ -120,6 +120,7 @@
                         </div>
                         <button onclick="h_addMember()" class="bg-sky-800 text-white px-6 py-3 rounded-xl text-xs font-bold shrink-0 active:scale-95">加入</button>
                     </div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">現有成員</p>
                     <div id="d_memList" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
@@ -134,11 +135,11 @@
             setTimeout(() => { launch.classList.add('hidden'); content.classList.remove('hidden'); setTimeout(() => content.style.opacity = '1', 50); }, 600);
         }
 
-        let allTrips = JSON.parse(localStorage.getItem('exp_v4_stable')) || [];
+        let allTrips = JSON.parse(localStorage.getItem('exp_v5_final')) || [];
         let activeIdx = -1;
         let myChart = null;
 
-        function h_saveData() { localStorage.setItem('exp_v4_stable', JSON.stringify(allTrips)); h_renderTripList(); if(activeIdx !== -1) h_refreshDetail(); }
+        function h_saveData() { localStorage.setItem('exp_v5_final', JSON.stringify(allTrips)); h_renderTripList(); if(activeIdx !== -1) h_refreshDetail(); }
 
         function h_createTrip() {
             const name = document.getElementById('newTripInput').value.trim();
@@ -181,20 +182,34 @@
             document.getElementById('d_tripTitle').innerText = trip.name;
             const total = trip.expenses.reduce((s, e) => s + e.amt, 0);
             document.getElementById('d_totalAmt').innerText = `$ ${total.toFixed(2)}`;
+            
+            // 渲染付款人下拉
             document.getElementById('i_payer').innerHTML = trip.members.map(m => `<option value="${m}">${m}</option>`).join('');
+            
+            // 渲染分擔對象
             document.getElementById('i_splitList').innerHTML = trip.members.map(m => `
                 <label class="flex items-center gap-2 p-3 bg-white/80 rounded-xl text-[11px] font-bold shadow-sm ring-1 ring-gray-100">
                     <input type="checkbox" value="${m}" checked class="w-4 h-4 accent-sky-900">
                     <span class="truncate">${m}</span>
                 </label>
             `).join('');
-            document.getElementById('d_memList').innerHTML = trip.members.map(m => `<span class="bg-sky-50 text-sky-800 px-3 py-1 rounded-full text-[10px] font-bold border border-sky-100">${m}</span>`).join('');
+            
+            // 渲染成員清單 (帶移除按鍵)
+            document.getElementById('d_memList').innerHTML = trip.members.map((m, i) => `
+                <div class="flex items-center gap-1 bg-sky-50 text-sky-800 pl-3 pr-1 py-1 rounded-full text-[10px] font-bold border border-sky-100">
+                    <span>${m}</span>
+                    ${trip.members.length > 1 ? `<button onclick="h_removeMember(${i})" class="w-5 h-5 flex items-center justify-center text-sky-300 hover:text-red-400 text-sm font-light">×</button>` : ''}
+                </div>
+            `).join('');
+            
+            // 紀錄清單
             document.getElementById('d_expList').innerHTML = trip.expenses.map((e, idx) => `
                 <div class="bg-white/95 p-4 rounded-2xl flex justify-between items-center shadow-sm">
                     <div class="min-w-0 flex-1"><p class="text-xs font-bold text-sky-950 truncate">${e.cat} | ${e.name}</p><p class="text-[9px] text-gray-400">付: ${e.payer} · 分: ${e.split.length}人</p></div>
-                    <div class="flex items-center gap-3 shrink-0 ml-2"><span class="font-bold text-sm text-sky-900">$${e.amt.toFixed(1)}</span><button onclick="h_deleteExp(${idx})" class="text-red-200 text-lg px-2 active:scale-125 transition-transform">×</button></div>
+                    <div class="flex items-center gap-3 shrink-0 ml-2"><span class="font-bold text-sm text-sky-900">$${e.amt.toFixed(1)}</span><button onclick="h_deleteExp(${idx})" class="text-red-200 text-lg px-2">×</button></div>
                 </div>
             `).reverse().join('');
+            
             h_updateChart();
         }
 
@@ -212,11 +227,20 @@
         }
 
         function h_deleteExp(idx) { allTrips[activeIdx].expenses.splice(allTrips[activeIdx].expenses.length - 1 - idx, 1); h_saveData(); }
-        function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("確定刪除？")) { allTrips.splice(idx, 1); h_saveData(); } }
+        function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("確定刪除此項目？")) { allTrips.splice(idx, 1); h_saveData(); } }
         function h_clearAll() { if(confirm("清空紀錄？")) { allTrips[activeIdx].expenses = []; h_saveData(); } }
+        
         function h_addMember() {
             const n = document.getElementById('i_newMem').value.trim();
             if(n && !allTrips[activeIdx].members.includes(n)) { allTrips[activeIdx].members.push(n); document.getElementById('i_newMem').value = ''; h_saveData(); }
+        }
+
+        function h_removeMember(idx) {
+            const name = allTrips[activeIdx].members[idx];
+            if(confirm(`從此旅程移除成員「${name}」？\n注意：相關支出紀錄不會自動更改。`)) {
+                allTrips[activeIdx].members.splice(idx, 1);
+                h_saveData();
+            }
         }
 
         function h_switchTab(tab) {
@@ -232,23 +256,24 @@
             h_switchTab('settle');
             const trip = allTrips[activeIdx];
             let bal = {}; trip.members.forEach(m => bal[m] = 0);
-            trip.expenses.forEach(e => { const s = e.amt / e.split.length; bal[e.payer] += e.amt; e.split.forEach(p => { if(bal.hasOwnProperty(p)) bal[p] -= s; }); });
+            trip.expenses.forEach(e => { 
+                const s = e.amt / e.split.length; 
+                if(bal.hasOwnProperty(e.payer)) bal[e.payer] += e.amt; 
+                e.split.forEach(p => { if(bal.hasOwnProperty(p)) bal[p] -= s; }); 
+            });
             const res = document.getElementById('d_settleList');
             res.innerHTML = '<p class="text-[10px] font-bold text-gray-400 text-center uppercase mb-4 tracking-widest">最佳轉帳方案</p>';
             let g = [], r = [];
             for(let p in bal) { if(bal[p] < -0.1) g.push({n:p, a:Math.abs(bal[p])}); else if(bal[p] > 0.1) r.push({n:p, a:bal[p]}); }
-            if(!g.length) res.innerHTML += '<p class="text-center py-10 text-gray-400 text-xs">帳目已平</p>';
-            g.forEach(gv => { r.forEach(rv => { if(gv.a > 0 && rv.a > 0) { let v = Math.min(gv.a, rv.a);
-                res.innerHTML += `<div class="flex justify-between items-center p-4 bg-sky-50 rounded-2xl border border-sky-100 shadow-sm"><span class="text-xs font-bold text-sky-950"><b>${gv.n}</b> ➔ <b>${rv.n}</b></span><b class="text-sky-900">$${v.toFixed(2)}</b></div>`;
-                gv.a -= v; rv.a -= v;
-            }})});
+            if(!g.length) res.innerHTML += '<p class="text-center py-10 text-gray-400 text-xs italic">帳目已平</p>';
+            g.forEach(gv => { r.forEach(rv => { if(gv.a > 0 && rv.a > 0) { let v = Math.min(gv.a, rv.a); res.innerHTML += `<div class="flex justify-between items-center p-4 bg-sky-50 rounded-2xl border border-sky-100 shadow-sm"><span class="text-xs font-bold text-sky-950"><b>${gv.n}</b> ➔ <b>${rv.n}</b></span><b class="text-sky-900">$${v.toFixed(2)}</b></div>`; gv.a -= v; rv.a -= v; }})});
         }
 
         function h_copyMsg() {
             const trip = allTrips[activeIdx];
             let msg = `💰 ${trip.name} 結算\n------------------\n`;
             let bal = {}; trip.members.forEach(m => bal[m] = 0);
-            trip.expenses.forEach(e => { const s = e.amt / e.split.length; bal[e.payer] += e.amt; e.split.forEach(p => { if(bal.hasOwnProperty(p)) bal[p] -= s; }); });
+            trip.expenses.forEach(e => { const s = e.amt / e.split.length; if(bal.hasOwnProperty(e.payer)) bal[e.payer] += e.amt; e.split.forEach(p => { if(bal.hasOwnProperty(p)) bal[p] -= s; }); });
             let g = [], r = [];
             for(let p in bal) { if(bal[p] < -0.1) g.push({n:p, a:Math.abs(bal[p])}); else if(bal[p] > 0.1) r.push({n:p, a:bal[p]}); }
             g.forEach(gv => { r.forEach(rv => { if(gv.a > 0 && rv.a > 0) { let v = Math.min(gv.a, rv.a); msg += `👉 ${gv.n} ➔ ${rv.n} : $${v.toFixed(2)}\n`; gv.a -= v; rv.a -= v; }})});
@@ -261,11 +286,7 @@
             trip.expenses.forEach(e => cats[e.cat] += e.amt);
             const ctx = document.getElementById('d_chart').getContext('2d');
             if(myChart) myChart.destroy();
-            myChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#fbbf24', '#38bdf8', '#818cf8', '#f87171', '#34d399'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 }, color: '#334155' } } }, cutout: '75%' }
-            });
+            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#fbbf24', '#38bdf8', '#818cf8', '#f87171', '#34d399'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 }, color: '#334155' } } }, cutout: '75%' } });
         }
 
         h_renderTripList();
