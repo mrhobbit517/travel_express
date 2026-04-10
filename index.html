@@ -29,7 +29,9 @@
     
     <div id="launch-screen" class="fixed inset-0 flex flex-col items-center justify-end pb-32">
         <div class="text-center mb-16 px-8">
-            <h1 class="text-5xl font-extrabold text-white tracking-tighter mb-4 [text-shadow:_0_4px_12px_rgba(0,0,0,0.5)]">旅結 開支助手</h1>
+            <h1 class="text-5xl font-extrabold text-white tracking-tighter mb-4 [text-shadow:_0_4px_12px_rgba(0,0,0,0.5)]">
+                旅結 <span class="text-3xl text-orange-400 italic">開支助手</span>
+            </h1>
             <p class="text-white text-base opacity-80 uppercase tracking-[0.5em] [text-shadow:_0_2px_6px_rgba(0,0,0,0.3)]">Expense Manager</p>
         </div>
         
@@ -43,7 +45,7 @@
     <div id="app-content" class="hidden opacity-0 transition-opacity duration-500">
         <div id="view-home" class="relative max-w-md mx-auto px-5 pt-12 pb-20 z-10">
             <header class="mb-10 text-center relative">
-                <h1 class="text-3xl font-extrabold text-sky-950 tracking-tighter">旅結 <span class="text-amber-500 italic">Pro</span></h1>
+                <h1 class="text-3xl font-extrabold text-sky-950 tracking-tighter">旅結 <span class="text-amber-500 italic">開支助手</span></h1>
                 <p class="text-gray-500 text-[10px] mt-1 uppercase tracking-[0.4em]">Expense Manager</p>
                 <div class="mt-4 flex justify-center gap-2">
                     <button onclick="exportData()" class="text-[9px] bg-white/80 px-3 py-1 rounded-full shadow-sm border">匯出備份</button>
@@ -52,7 +54,6 @@
                 </div>
             </header>
         
-            
             <div class="glass p-6 rounded-[2.5rem] shadow-xl mb-10">
                 <h3 class="text-xs font-bold text-gray-700 mb-4 flex items-center gap-2">
                     <span class="w-1 h-3.5 bg-amber-400 rounded-full"></span> 建立新項目
@@ -146,7 +147,7 @@
                     <div class="flex flex-col gap-2 mb-6">
                         <input type="text" id="i_newMem" placeholder="旅伴名字" class="w-full bg-gray-50 px-4 py-3 rounded-xl border-none ring-1 ring-gray-100">
                          <div class="flex justify-between items-center">
-                            <label class="text-xs text-gray-500">代表色：<input type="color" id="i_memColor" value="#0369a1" class="w-8 h-8 rounded-full border-none"></label>
+                             <label class="text-xs text-gray-500">代表色：<input type="color" id="i_memColor" value="#0369a1" class="w-8 h-8 rounded-full border-none"></label>
                             <button onclick="h_addMember()" class="bg-sky-800 text-white px-8 py-3 rounded-xl text-xs font-bold">加入</button>
                          </div>
                     </div>
@@ -167,21 +168,21 @@
                 即時匯率轉換
             </h4>
              <div class="space-y-4">
-                <div>
+                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">選擇外幣與金額</label>
                     <div class="flex gap-2 mt-1">
                         <select id="fx_currency" onchange="fetchRate()" class="w-1/3 bg-sky-50 px-2 py-4 rounded-2xl border-none ring-1 ring-sky-100 text-xs font-bold text-sky-900 text-center">
                             <option value="JPY">JPY</option>
                             <option value="TWD">TWD</option>
                             <option value="EUR">EUR</option>
-                             <option value="CNY">CNY</option>
+                            <option value="CNY">CNY</option>
                             <option value="KRW">KRW</option>
                             <option value="USD">USD</option>
                              <option value="GBP">GBP</option>
-                            <option value="THB">THB</option>
+                             <option value="THB">THB</option>
                         </select>
                         <input type="number" id="fx_foreign" placeholder="外幣金額" class="w-2/3 bg-gray-50 p-4 rounded-2xl border-none ring-1 ring-gray-100 font-bold">
-                     </div>
+                    </div>
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 flex justify-between">
@@ -190,12 +191,12 @@
                     </label>
                     <input type="number" id="fx_rate" class="w-full bg-gray-50 p-4 rounded-2xl border-none ring-1 ring-gray-100 mt-1" placeholder="載入中...">
                 </div>
-                 <div class="pt-4">
+                  <div class="pt-4">
                     <button onclick="applyFx()" class="w-full bg-sky-950 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">確定轉換</button>
                     <button onclick="toggleFxModal(false)" class="w-full text-gray-400 text-xs mt-4">取消</button>
                 </div>
             </div>
-         </div>
+        </div>
     </div>
 
     <script>
@@ -290,7 +291,6 @@
             
             const container = document.getElementById('h_tripList');
             const filtered = allTrips.map((t, i) => ({...t, originalIdx: i})).filter(t => type === 'active' ? !t.isArchived : t.isArchived);
-            
             // 更改 2：空白狀態下的導航貓替換為自定義圖
             container.innerHTML = filtered.length ?
             filtered.map(t => `
@@ -303,7 +303,7 @@
                 </div>
             `).join('') : `
                <div class="flex flex-col items-center justify-center py-10 opacity-70">
-                    <img src="image_0.png" alt="旅結導覽貓" class="w-16 h-16 mb-2 pixelated">
+                    <img src="https://i.imgur.com/bKq0Gsr.png" alt="旅結導覽貓" class="w-16 h-16 mb-2 pixelated">
                     <p class="text-center text-gray-500 text-xs font-bold tracking-widest">目前空空如也喵～</p>
                 </div>
             `;
@@ -340,7 +340,7 @@
                 <div class="flex items-center gap-2 p-3 bg-white/80 rounded-xl text-[11px] font-bold shadow-sm ring-1 ring-gray-100">
                     <input type="checkbox" value="${m.n}" checked class="w-4 h-4 accent-sky-900" ${mode === 'custom' ? 'style="display:none"' : ''}>
                     <span class="w-3 h-3 rounded-full" style="background:${m.c}"></span>
-                     <span class="truncate flex-1">${m.n}</span>
+                      <span class="truncate flex-1">${m.n}</span>
                     ${mode === 'custom' ? `<input type="number" step="0.1" placeholder="$" class="w-16 p-1 text-right bg-transparent border-b border-gray-200 i-split-amt">` : ''}
                 </div>
             `).join('');
@@ -460,14 +460,14 @@
                 // 更改 2：完美結算狀態下的導航貓替換為自定義圖
                 res.innerHTML = `
                     <div class="flex flex-col items-center justify-center py-6">
-                        <img src="image_0.png" alt="完美結算貓" class="w-20 h-20 mb-2 pixelated">
+                        <img src="https://i.imgur.com/bKq0Gsr.png" alt="完美結算貓" class="w-20 h-20 mb-2 pixelated">
                         <p class="text-center text-emerald-600 text-sm font-bold">帳目完美平衡！太厲害了喵！🐾</p>
                     </div>`;
             } else {
                 // 更改 2：轉帳提醒狀態下的導航貓替換為自定義圖
                 res.innerHTML = `
                     <div class="flex items-center justify-center gap-2 mb-4">
-                        <img src="image_0.png" alt="旅結導覽貓" class="w-10 h-10 pixelated">
+                        <img src="https://i.imgur.com/bKq0Gsr.png" alt="旅結導覽貓" class="w-10 h-10 pixelated">
                          <p class="text-[10px] font-bold text-gray-400 text-center uppercase tracking-widest">最佳轉帳方案 (HKD)</p>
                     </div>
                 `;
@@ -480,10 +480,10 @@
                             res.innerHTML += `
                                  <div class="flex justify-between items-center p-4 bg-sky-50 rounded-2xl border border-sky-100 shadow-sm mb-2">
                                     <span class="text-xs font-bold text-sky-950 flex items-center gap-1">
-                                         <b style="color:${gMem.c}">${gv.n}</b> ➔ <b style="color:${rMem.c}">${rv.n}</b>
+                                      <b style="color:${gMem.c}">${gv.n}</b> ➔ <b style="color:${rMem.c}">${rv.n}</b>
                                     </span>
                                     <b class="text-sky-900">$${v.toFixed(2)}</b>
-                                 </div>`; 
+                                  </div>`; 
                             gv.a -= v; rv.a -= v;
                         }
                      })
@@ -535,7 +535,7 @@
                 data: { 
                     labels: Object.keys(cats).filter(k => cats[k] > 0), 
                     datasets: [{ 
-                         data: Object.values(cats).filter(v => v > 0), 
+                        data: Object.values(cats).filter(v => v > 0), 
                         backgroundColor: ['#fbbf24', '#38bdf8', '#818cf8', '#f87171', '#34d399', '#f472b6', '#94a3b8'], 
                         borderWidth: 0 
                     }] 
@@ -543,8 +543,7 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    plugins: { legend: 
-                        { position: 'right', labels: { boxWidth: 8, font: { size: 9 } } } }, 
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 } } } }, 
                     cutout: '70%' 
                 } 
             });
@@ -598,10 +597,14 @@
             }
         }
 
-        function h_deleteExp(idx) { if(confirm("刪除紀錄？")) { allTrips[activeIdx].expenses.splice(idx, 1); h_saveData(); } }
-        function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("確定刪除此整個行程項目？")) { allTrips.splice(idx, 1); h_saveData(); } }
-        function h_clearAll() { if(confirm("清空當前行程所有紀錄？")) { allTrips[activeIdx].expenses = []; h_saveData(); } }
-        function h_removeMember(idx) { if(confirm(`移除成員「${allTrips[activeIdx].members[idx].n}」？`)) { allTrips[activeIdx].members.splice(idx, 1); h_saveData(); } }
+        function h_deleteExp(idx) { if(confirm("刪除紀錄？")) { allTrips[activeIdx].expenses.splice(idx, 1);
+            h_saveData(); } }
+        function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("確定刪除此整個行程項目？")) { allTrips.splice(idx, 1); h_saveData();
+        } }
+        function h_clearAll() { if(confirm("清空當前行程所有紀錄？")) { allTrips[activeIdx].expenses = []; h_saveData();
+        } }
+        function h_removeMember(idx) { if(confirm(`移除成員「${allTrips[activeIdx].members[idx].n}」？`)) { allTrips[activeIdx].members.splice(idx, 1); h_saveData();
+        } }
 
         renderHomeList('active');
     </script>
