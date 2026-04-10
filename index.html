@@ -28,7 +28,7 @@
 <body class="wano-bg">
     
     <div id="launch-screen" class="fixed inset-0">
-        <div class="absolute top-[40%] left-0 w-full text-center px-8 -translate-y-1/2">
+        <div class="absolute top-[30%] left-0 w-full text-center px-8 -translate-y-1/2">
             <h1 class="text-5xl font-extrabold text-white tracking-tighter mb-4 [text-shadow:_0_4px_12px_rgba(0,0,0,0.5)]">
                 旅結 <span class="text-3xl text-orange-400 italic">開支助手</span>
             </h1>
@@ -102,11 +102,11 @@
                         <option value="食">🍴</option><option value="住">🏨</option><option value="行">🚗</option>
                         <option value="玩">🎟️</option><option value="購">🛍️</option><option value="機">✈️</option>
                         <option value="雜">📦</option>
-                     </select>
+                    </select>
                     <div class="flex-1 min-w-0">
                         <input type="text" id="i_name" placeholder="項目名稱 (如：拉麵)" class="w-full bg-white px-5 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100">
                     </div>
-                 </div>
+                </div>
                 <div class="flex flex-col gap-2">
                     <div class="flex gap-2">
                         <input type="date" id="i_date" class="bg-white px-3 py-4 rounded-2xl shadow-sm border-none ring-1 ring-gray-100 text-xs">
@@ -149,10 +149,10 @@
             <div id="p-mem" class="hidden space-y-4">
                 <div class="bg-white/95 p-6 rounded-3xl shadow-sm border border-gray-50">
                      <p class="text-sm font-bold mb-4">管理成員</p>
-                    <div class="flex flex-col gap-2 mb-6">
+                     <div class="flex flex-col gap-2 mb-6">
                         <input type="text" id="i_newMem" placeholder="旅伴名字" class="w-full bg-gray-50 px-4 py-3 rounded-xl border-none ring-1 ring-gray-100">
                          <div class="flex justify-between items-center">
-                             <label class="text-xs text-gray-500">代表色：<input type="color" id="i_memColor" value="#0369a1" class="w-8 h-8 rounded-full border-none"></label>
+                            <label class="text-xs text-gray-500">代表色：<input type="color" id="i_memColor" value="#0369a1" class="w-8 h-8 rounded-full border-none"></label>
                             <button onclick="h_addMember()" class="bg-sky-800 text-white px-8 py-3 rounded-xl text-xs font-bold">加入</button>
                          </div>
                     </div>
@@ -184,7 +184,7 @@
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 flex justify-between">
-                         <span>當前匯率 (1 外幣 = ? HKD)</span>
+                        <span>當前匯率 (1 外幣 = ? HKD)</span>
                         <span id="fx_status" class="text-emerald-500"></span>
                     </label>
                     <input type="number" id="fx_rate" class="w-full bg-gray-50 p-4 rounded-2xl border-none ring-1 ring-gray-100 mt-1" placeholder="載入中...">
@@ -280,7 +280,7 @@
                 expenses: [], 
                 isArchived: false,
                 defaultPayer: "我"
-             });
+            });
             h_saveData();
             document.getElementById('newTripInput').value = '';
             h_openTrip(allTrips.length - 1);
@@ -314,12 +314,12 @@
                 <div onclick="h_openTrip(${t.originalIdx})" class="glass p-5 rounded-[2rem] flex justify-between items-center active:scale-95 transition-transform shadow-sm">
                     <div class="min-w-0 flex-1 mr-4">
                         <h4 class="font-bold text-sky-950 text-sm truncate">${t.name}</h4>
-                         <p class="text-[10px] text-gray-400 mt-1">${t.members.length} 人 · ${t.expenses.length} 筆</p>
+                        <p class="text-[10px] text-gray-400 mt-1">${t.members.length} 人 · ${t.expenses.length} 筆</p>
                     </div>
                     <button onclick="h_deleteTrip(${t.originalIdx}, event)" class="text-gray-300 text-xs px-2 shrink-0">刪除</button>
                 </div>
             `).join('') : `
-               <div class="flex flex-col items-center justify-center py-10 opacity-70">
+                <div class="flex flex-col items-center justify-center py-10 opacity-70">
                     <img src="https://i.imgur.com/bKq0Gsr.png" alt="旅結導覽貓" class="w-16 h-16 mb-2 pixelated">
                     <p class="text-center text-gray-500 text-xs font-bold tracking-widest">目前空空如也喵～</p>
                 </div>
@@ -375,7 +375,7 @@
                     <p class="text-[10px] font-bold text-gray-400 pl-2 uppercase">${date}</p>
                     ${groups[date].map(e => `
                         <div class="bg-white/95 p-4 rounded-2xl flex justify-between items-center shadow-sm">
-                             <div class="min-w-0 flex-1">
+                            <div class="min-w-0 flex-1">
                                 <p class="text-xs font-bold text-sky-950 truncate">${e.cat} | ${e.name}</p>
                                 <p class="text-[9px] text-gray-400">付: ${e.payer} · 分: ${Object.keys(e.split).length}人</p>
                             </div>
@@ -384,7 +384,7 @@
                                 <button onclick="h_deleteExp(${e.originalIdx})" class="text-red-200 text-lg px-2 active:scale-125 transition-transform">×</button>
                             </div>
                         </div>
-                     `).join('')}
+                    `).join('')}
                 </div>
             `).join('');
         }
@@ -409,7 +409,7 @@
                     const val = parseFloat(input.value) || 0;
                     if(val > 0) {
                         const mName = allTrips[activeIdx].members[i].n;
-                         split[mName] = val;
+                        split[mName] = val;
                         totalSet += val;
                     }
                 });
@@ -488,13 +488,13 @@
                             res.innerHTML += `
                                  <div class="flex justify-between items-center p-4 bg-sky-50 rounded-2xl border border-sky-100 shadow-sm mb-2">
                                     <span class="text-xs font-bold text-sky-950 flex items-center gap-1">
-                                      <b style="color:${gMem.c}">${gv.n}</b> ➔ <b style="color:${rMem.c}">${rv.n}</b>
+                                       <b style="color:${gMem.c}">${gv.n}</b> ➔ <b style="color:${rMem.c}">${rv.n}</b>
                                     </span>
                                     <b class="text-sky-900">$${v.toFixed(2)}</b>
-                                  </div>`; 
+                                 </div>`; 
                             gv.a -= v; rv.a -= v;
                         }
-                     })
+                    })
                 });
             }
         }
@@ -547,11 +547,12 @@
                         backgroundColor: ['#fbbf24', '#38bdf8', '#818cf8', '#f87171', '#34d399', '#f472b6', '#94a3b8'], 
                         borderWidth: 0 
                     }] 
-                 }, 
+                }, 
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 } } } }, 
+                    plugins: { 
+                        legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 } } } }, 
                     cutout: '70%' 
                 } 
             });
@@ -599,10 +600,14 @@
             }
         }
 
-        function h_deleteExp(idx) { if(confirm("刪除紀錄？")) { allTrips[activeIdx].expenses.splice(idx, 1); h_saveData(); } }
-        function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("確定刪除此整個行程項目？")) { allTrips.splice(idx, 1); h_saveData(); } }
-        function h_clearAll() { if(confirm("清空當前行程所有紀錄？")) { allTrips[activeIdx].expenses = []; h_saveData(); } }
-        function h_removeMember(idx) { if(confirm(`移除成員「${allTrips[activeIdx].members[idx].n}」？`)) { allTrips[activeIdx].members.splice(idx, 1); h_saveData(); } }
+        function h_deleteExp(idx) { if(confirm("刪除紀錄？")) { allTrips[activeIdx].expenses.splice(idx, 1);
+        h_saveData(); } }
+        function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("確定刪除此整個行程項目？")) { allTrips.splice(idx, 1); h_saveData();
+        } }
+        function h_clearAll() { if(confirm("清空當前行程所有紀錄？")) { allTrips[activeIdx].expenses = []; h_saveData();
+        } }
+        function h_removeMember(idx) { if(confirm(`移除成員「${allTrips[activeIdx].members[idx].n}」？`)) { allTrips[activeIdx].members.splice(idx, 1); h_saveData();
+        } }
 
         renderHomeList('active');
     </script>
