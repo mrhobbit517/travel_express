@@ -135,7 +135,7 @@
                             <option value="食">🍴</option><option value="住">🏨</option><option value="行">🚗</option>
                             <option value="玩">🎟️</option><option value="購">🛍️</option><option value="機">✈️</option><option value="雜">📦</option>
                         </select>
-                        <input type="text" id="i_name" placeholder="項目名稱 (如：拉麵)" class="flex-1 min-w-0 bg-white dark:bg-gray-700 px-5 py-4 rounded-2xl shadow-sm dark:text-white">
+                        <input type="text" id="i_name" placeholder="項目名稱 (如：拉麵)" class="flex-1 min-w-0 bg-white dark:bg-gray-700 px-5 py-4 rounded-2xl shadow-sm dark:text-white outline-none">
                     </div>
 
                     <!-- 多國貨幣匯率區 -->
@@ -144,27 +144,37 @@
                             <span>結算幣值 (必定轉為HKD)</span>
                             <span id="fx_hint" class="text-emerald-500"></span>
                         </div>
-                        <div class="flex gap-2">
-                            <select id="i_currency" onchange="checkCurrency()" class="w-1/3 bg-gray-50 dark:bg-gray-600 px-2 py-3 rounded-xl text-xs font-bold dark:text-white">
+                        <div class="flex gap-2 items-center">
+                            <!-- 加入更多貨幣 -->
+                            <select id="i_currency" onchange="checkCurrency()" class="w-1/3 bg-gray-50 dark:bg-gray-600 px-2 py-3 rounded-xl text-xs font-bold dark:text-white outline-none">
                                 <option value="HKD">HKD</option><option value="JPY">JPY</option><option value="TWD">TWD</option>
                                 <option value="CNY">CNY</option><option value="KRW">KRW</option><option value="THB">THB</option>
+                                <option value="EUR">EUR</option><option value="GBP">GBP</option><option value="AUD">AUD</option>
+                                <option value="CAD">CAD</option><option value="SGD">SGD</option>
                             </select>
-                            <input type="number" id="i_amt" inputmode="decimal" placeholder="輸入金額" class="w-2/3 bg-white dark:bg-gray-700 px-4 py-3 rounded-xl font-bold shadow-sm dark:text-white">
+                            
+                            <!-- 解決問題 1: 一鍵乘人數 -->
+                            <div class="flex flex-1 gap-1 items-center bg-white dark:bg-gray-700 rounded-xl pr-1 overflow-hidden shadow-sm">
+                                <input type="number" id="i_amt" inputmode="decimal" placeholder="單人/總金額" class="w-full px-3 py-3 font-bold bg-transparent dark:text-white outline-none">
+                                <button onclick="multiplyByMembers()" class="shrink-0 bg-amber-400 hover:bg-amber-500 text-amber-950 px-3 py-2 rounded-lg text-[11px] font-black active:scale-95 transition-transform shadow-sm">× 人數</button>
+                            </div>
                         </div>
-                        <div id="fx_rate_box" class="hidden flex gap-2 items-center">
-                            <span class="text-xs text-gray-500 flex-none">匯率: 1外幣 = </span>
-                            <input type="number" id="i_rate" step="0.0001" placeholder="輸入/自動載入" oninput="calcHkd()" class="flex-1 bg-white dark:bg-gray-700 px-3 py-2 rounded-lg text-xs shadow-sm dark:text-white">
-                            <span class="text-xs font-bold text-sky-800 dark:text-sky-300 ml-2">約 <span id="fx_hkd_result">0.00</span> HKD</span>
+                        
+                        <!-- 解決問題 2: 匯率框出界 (加入 flex-wrap 及調整寬度) -->
+                        <div id="fx_rate_box" class="hidden flex flex-wrap gap-2 items-center mt-2 border-t dark:border-gray-600 pt-3">
+                            <span class="text-xs text-gray-500 shrink-0">匯率: 1外幣 = </span>
+                            <input type="number" id="i_rate" step="0.0001" placeholder="輸入/載入" oninput="calcHkd()" class="w-24 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg text-xs shadow-inner dark:text-white outline-none border border-transparent focus:border-sky-500">
+                            <span class="text-xs font-bold text-sky-800 dark:text-sky-300 ml-auto shrink-0">約 <span id="fx_hkd_result">0.00</span> HKD</span>
                         </div>
                     </div>
 
                     <div class="flex gap-2">
-                        <input type="date" id="i_date" class="w-1/3 bg-white dark:bg-gray-700 px-3 py-4 rounded-2xl shadow-sm text-xs dark:text-white">
+                        <input type="date" id="i_date" class="w-1/3 bg-white dark:bg-gray-700 px-3 py-4 rounded-2xl shadow-sm text-xs dark:text-white outline-none">
                         <!-- 收據上傳 -->
                         <div class="w-2/3 relative">
                             <input type="file" id="i_receipt" accept="image/*" class="hidden" onchange="previewReceipt(event)">
-                            <button onclick="document.getElementById('i_receipt').click()" class="w-full h-full bg-white dark:bg-gray-700 px-4 py-4 rounded-2xl shadow-sm text-xs flex items-center justify-center gap-2 text-gray-500 hover:text-sky-600">
-                                📷 <span id="receipt_label">附加收據相片</span>
+                            <button onclick="document.getElementById('i_receipt').click()" class="w-full h-full bg-white dark:bg-gray-700 px-4 py-4 rounded-2xl shadow-sm text-xs flex items-center justify-center gap-2 text-gray-500 hover:text-sky-600 outline-none">
+                                📸 <span id="receipt_label">附加收據相片</span>
                             </button>
                             <button id="receipt_del" onclick="clearReceipt()" class="hidden absolute right-2 top-1/2 -translate-y-1/2 bg-red-100 text-red-600 rounded-full w-6 h-6 text-xs font-bold">×</button>
                         </div>
@@ -173,12 +183,12 @@
                     <div class="glass p-5 rounded-3xl shadow-sm space-y-4">
                         <div class="flex justify-between items-center text-sm font-bold">
                             <span class="text-gray-500 dark:text-gray-300 text-xs">誰付款？</span>
-                            <select id="i_payer" class="w-auto min-w-[100px] bg-sky-50 dark:bg-sky-900 px-3 py-2 rounded-xl text-sky-950 dark:text-white"></select>
+                            <select id="i_payer" class="w-auto min-w-[100px] bg-sky-50 dark:bg-sky-900 px-3 py-2 rounded-xl text-sky-950 dark:text-white outline-none"></select>
                         </div>
                         <hr class="border-gray-200 dark:border-gray-600">
                         <div class="flex justify-between items-center">
                              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">分擔模式</p>
-                            <select id="i_splitType" onchange="toggleSplitMode()" class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg dark:text-white">
+                            <select id="i_splitType" onchange="toggleSplitMode()" class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg dark:text-white outline-none">
                                 <option value="equal">均分</option>
                                 <option value="custom">自定義金額(HKD)</option>
                              </select>
@@ -206,8 +216,8 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <button onclick="generateImage()" class="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold text-xs shadow-lg active:scale-95 transition-transform">下載結算圖</button>
-                        <button onclick="h_copyMsg()" class="flex-1 py-4 bg-sky-600 text-white rounded-2xl font-bold text-xs shadow-lg active:scale-95 transition-transform">複製文字分享</button>
+                        <button onclick="generateImage()" class="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold text-xs shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-1">📸 下載結算圖</button>
+                        <button onclick="h_copyMsg()" class="flex-1 py-4 bg-sky-600 text-white rounded-2xl font-bold text-xs shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-1">📋 複製文字</button>
                     </div>
                 </div>
 
@@ -216,15 +226,15 @@
                     <div class="glass p-6 rounded-3xl shadow-sm">
                         <p class="text-sm font-bold mb-4 dark:text-white">管理成員</p>
                         <div class="flex flex-col gap-2 mb-6">
-                            <input type="text" id="i_newMem" placeholder="旅伴名字" class="w-full bg-white dark:bg-gray-700 px-4 py-3 rounded-xl shadow-sm dark:text-white">
+                            <input type="text" id="i_newMem" placeholder="旅伴名字" class="w-full bg-white dark:bg-gray-700 px-4 py-3 rounded-xl shadow-sm dark:text-white outline-none">
                              <div class="flex justify-between items-center mt-2">
                                 <label class="text-xs text-gray-500 dark:text-gray-300 flex items-center gap-2">代表色：<input type="color" id="i_memColor" value="#0369a1" class="w-8 h-8 rounded-full border-none cursor-pointer"></label>
-                                <button onclick="h_addMember()" class="bg-sky-800 dark:bg-sky-600 text-white px-8 py-3 rounded-xl text-xs font-bold shadow-md active:scale-95">加入</button>
+                                <button onclick="h_addMember()" class="bg-sky-800 dark:bg-sky-600 text-white px-8 py-3 rounded-xl text-xs font-bold shadow-md active:scale-95 outline-none">加入</button>
                              </div>
                         </div>
                         <div class="flex items-center gap-2 mb-4">
                             <span class="text-xs font-bold dark:text-gray-300">預設付款人：</span>
-                            <select id="i_defaultPayer" onchange="h_setDefaultPayer()" class="text-xs bg-gray-100 dark:bg-gray-700 p-2 rounded dark:text-white"></select>
+                            <select id="i_defaultPayer" onchange="h_setDefaultPayer()" class="text-xs bg-gray-100 dark:bg-gray-700 p-2 rounded dark:text-white outline-none"></select>
                         </div>
                         <div id="d_memList" class="flex flex-wrap gap-2 mt-4 pt-4 border-t dark:border-gray-600"></div>
                     </div>
@@ -262,10 +272,9 @@
             const isDark = html.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             document.getElementById('icon-theme').innerText = isDark ? '☀️' : '🌙';
-            if(myChart) h_updateChart(); // 重繪圖表顏色
+            if(myChart) h_updateChart();
         }
         
-        // 載入時檢查 Theme
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
             document.getElementById('icon-theme').innerText = '☀️';
@@ -275,7 +284,7 @@
             try {
                 localStorage.setItem('exp_v8_final', JSON.stringify(allTrips)); 
             } catch(e) {
-                alert("儲存空間已滿！請清除部分舊紀錄或收據相片。"); // 預防 localStorage 爆滿
+                alert("儲存空間已滿！請清除部分舊紀錄或收據相片。");
             }
             renderHomeList(currentHomeTab);
             if(activeIdx !== -1) h_refreshDetail(); 
@@ -298,7 +307,7 @@
             } catch(e) {}
         }
 
-        // --- 功能 1: 多國貨幣處理 ---
+        // --- 多國貨幣處理 ---
         async function checkCurrency() {
             const curr = document.getElementById('i_currency').value;
             const rateBox = document.getElementById('fx_rate_box');
@@ -334,7 +343,17 @@
             if(document.getElementById('i_currency').value !== 'HKD') calcHkd();
         });
 
-        // --- 功能 2: 相片壓縮與上傳 ---
+        // 解決問題 1: 乘人數功能
+        function multiplyByMembers() {
+            const amt = parseFloat(document.getElementById('i_amt').value) || 0;
+            const count = allTrips[activeIdx].members.length;
+            if (count > 0 && amt > 0) {
+                document.getElementById('i_amt').value = (amt * count).toFixed(2);
+                calcHkd();
+            }
+        }
+
+        // --- 相片壓縮與上傳 ---
         function previewReceipt(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -343,7 +362,6 @@
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    // 壓縮圖片：最大寬度 800px，品質 0.6
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 800;
                     let width = img.width, height = img.height;
@@ -425,7 +443,7 @@
                     <input type="checkbox" value="${m.n}" checked class="w-4 h-4 accent-sky-600" ${mode === 'custom' ? 'style="display:none"' : ''}>
                     <span class="w-3 h-3 rounded-full" style="background:${m.c}"></span>
                     <span class="truncate flex-1 dark:text-white">${m.n}</span>
-                    ${mode === 'custom' ? `<input type="number" step="0.1" placeholder="$" class="w-16 p-1 text-right bg-transparent border-b border-gray-300 dark:border-gray-500 dark:text-white i-split-amt">` : ''}
+                    ${mode === 'custom' ? `<input type="number" step="0.1" placeholder="$" class="w-16 p-1 text-right bg-transparent border-b border-gray-300 dark:border-gray-500 dark:text-white i-split-amt outline-none">` : ''}
                 </div>
             `).join('');
         }
@@ -438,9 +456,7 @@
             
             if(!inputAmt) return alert("請輸入金額");
             
-            // 如果係外幣，最終結算銀碼係 inputAmt * rate
             const amt = currency === 'HKD' ? inputAmt : parseFloat((inputAmt * rate).toFixed(2));
-            
             const date = document.getElementById('i_date').value;
             const cat = document.getElementById('i_cat').value;
             const payer = document.getElementById('i_payer').value;
@@ -478,6 +494,17 @@
 
         function renderExpenseList() {
             const trip = allTrips[activeIdx];
+            
+            // 解決問題 4: 加入貓貓空狀態圖案
+            if (trip.expenses.length === 0) {
+                document.getElementById('d_expList').innerHTML = `
+                    <div class="text-center py-12 opacity-60">
+                        <span class="text-6xl mb-4 block drop-shadow-md">🐱</span>
+                        <p class="text-xs font-bold text-gray-500 dark:text-gray-400">仲未有任何開支紀錄喵～<br>快啲記低第一筆啦！</p>
+                    </div>`;
+                return;
+            }
+
             const groups = {};
             trip.expenses.forEach((e, idx) => {
                 const d = e.date || "未指定";
@@ -493,7 +520,7 @@
                             <div class="min-w-0 flex-1">
                                 <p class="text-xs font-bold text-sky-950 dark:text-white truncate">
                                     ${e.cat} | ${e.name}
-                                    ${e.receipt ? `<button onclick="showReceipt('${e.receipt}')" class="text-xs bg-gray-100 dark:bg-gray-700 px-2 rounded-full ml-1">📸</button>` : ''}
+                                    ${e.receipt ? `<button onclick="showReceipt('${e.receipt}')" class="text-xs bg-gray-100 dark:bg-gray-700 px-2 rounded-full ml-1 outline-none">📸</button>` : ''}
                                 </p>
                                 <p class="text-[9px] text-gray-500 dark:text-gray-400 mt-1">
                                     付: ${e.payer} · 分: ${Object.keys(e.split).length}人 
@@ -502,8 +529,8 @@
                             </div>
                             <div class="flex items-center gap-1 shrink-0 ml-2">
                                 <span class="font-bold text-sm text-sky-900 dark:text-sky-300 mr-2">$${e.amt.toFixed(1)}</span>
-                                <button onclick="h_editExp(${e.originalIdx})" class="text-sky-500 text-lg px-2">✎</button>
-                                <button onclick="h_deleteExp(${e.originalIdx})" class="text-red-400 text-lg px-2">×</button>
+                                <button onclick="h_editExp(${e.originalIdx})" class="text-sky-500 text-lg px-2 outline-none">✎</button>
+                                <button onclick="h_deleteExp(${e.originalIdx})" class="text-red-400 text-lg px-2 outline-none">×</button>
                             </div>
                         </div>
                     `).join('')}
@@ -548,7 +575,6 @@
             h_switchTab('add');
         }
 
-        // --- 功能 3: 結算頁加入總覽 ---
         function h_settleUI() {
             const trip = allTrips[activeIdx];
             let bal = {}, paidInfo = {}, shareInfo = {}; 
@@ -559,7 +585,6 @@
                 for(let p in e.split) { if (bal[p] !== undefined) { bal[p] -= e.split[p]; shareInfo[p] += e.split[p]; } }
             });
 
-            // 總覽表格
             document.getElementById('d_overview').innerHTML = trip.members.map(m => `
                 <div class="flex justify-between text-[11px] py-1 border-b border-gray-50 dark:border-gray-700 last:border-0">
                     <span class="font-bold w-1/4 truncate dark:text-white">${m.n}</span>
@@ -571,7 +596,6 @@
                 </div>
             `).join('');
 
-            // 轉帳方案
             const res = document.getElementById('d_settleList');
             let g = [], r = [];
             for(let p in bal) { 
@@ -580,7 +604,12 @@
             }
             
             if(!g.length) {
-                res.innerHTML = `<div class="text-center py-6 text-emerald-600 font-bold">帳目平衡！喵～🐾</div>`;
+                // 解決問題 4: 加入結算完美貓貓提示
+                res.innerHTML = `
+                    <div class="text-center py-8 text-emerald-600 dark:text-emerald-400 font-bold">
+                        <span class="text-5xl block mb-3 drop-shadow-md">😻</span>
+                        大家都冇欠大家錢！帳目完美平衡！喵～🐾
+                    </div>`;
             } else {
                 res.innerHTML = `<p class="text-[11px] font-bold text-gray-500 dark:text-gray-300 text-center uppercase tracking-widest mb-4 border-b pb-2 dark:border-gray-600">最佳轉帳方案</p>`;
                 g.forEach(gv => { 
@@ -588,8 +617,8 @@
                         if(gv.a > 0.01 && rv.a > 0.01) { 
                             let v = Math.min(gv.a, rv.a); 
                             res.innerHTML += `
-                                <div class="flex justify-between p-4 bg-sky-50 dark:bg-sky-900 rounded-2xl mb-2">
-                                    <span class="text-xs font-bold dark:text-white"><b>${gv.n}</b> ➔ <b>${rv.n}</b></span>
+                                <div class="flex justify-between items-center p-4 bg-sky-50 dark:bg-sky-900/50 rounded-2xl mb-2 border border-sky-100 dark:border-sky-800">
+                                    <span class="text-xs font-bold dark:text-white"><b>${gv.n}</b> <span class="text-sky-400 mx-1">➔</span> <b>${rv.n}</b></span>
                                     <b class="text-sky-900 dark:text-sky-300">$${v.toFixed(2)}</b>
                                 </div>`; 
                             gv.a -= v; rv.a -= v;
@@ -643,7 +672,7 @@
                 <div class="flex items-center gap-1 bg-white dark:bg-gray-800 text-sky-800 dark:text-sky-300 px-3 py-2 rounded-full text-xs font-bold shadow-sm border dark:border-gray-600">
                     <span class="w-2 h-2 rounded-full" style="background:${m.c}"></span>
                     <span>${m.n}</span>
-                    <button onclick="h_removeMember(${i})" class="ml-2 text-gray-400">×</button>
+                    <button onclick="h_removeMember(${i})" class="ml-2 text-gray-400 outline-none">×</button>
                 </div>
             `).join('');
         }
@@ -658,7 +687,7 @@
                         <h4 class="font-bold text-sky-950 dark:text-white text-sm truncate">${t.name}</h4>
                         <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${t.members.length} 人 · ${t.expenses.length} 筆</p>
                     </div>
-                    <button onclick="h_deleteTrip(${t.originalIdx}, event)" class="text-gray-300 dark:text-gray-600 text-xs px-3 py-1 hover:text-red-400">刪除</button>
+                    <button onclick="h_deleteTrip(${t.originalIdx}, event)" class="text-gray-300 dark:text-gray-600 text-xs px-3 py-1 hover:text-red-400 outline-none">刪除</button>
                 </div>
             `).join('');
         }
@@ -708,6 +737,7 @@
             reader.readAsText(e.target.files[0]);
         }
 
+        // 解決問題 3: 完美修復手機結算圖排版並加上背景
         async function generateImage() {
             const trip = allTrips[activeIdx];
             const overviewHTML = document.getElementById('d_overview').innerHTML;
@@ -715,36 +745,60 @@
             const total = document.getElementById('d_totalAmt').innerText;
 
             const tempDiv = document.createElement('div');
+            // 強制固定寬度與樣式，防止被手機屏幕響應式打亂
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';
-            tempDiv.style.width = '375px';
-            tempDiv.style.padding = '30px 20px';
-            tempDiv.style.backgroundColor = '#f8fafc'; // 固定用淺色底匯出
+            tempDiv.style.width = '420px';
+            tempDiv.style.padding = '40px 20px';
             tempDiv.style.fontFamily = "'Noto Sans TC', sans-serif";
+            tempDiv.style.backgroundImage = "url('https://i.imgur.com/DRcZvHV.png')";
+            tempDiv.style.backgroundSize = 'cover';
+            tempDiv.style.backgroundPosition = 'center';
             
+            // 寫死行內樣式，移除 Tailwind 的 dark mode 影響
             tempDiv.innerHTML = `
-                <div style="background: white; border-radius: 2rem; padding: 25px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center;">
-                    <h2 style="font-size: 24px; font-weight: 800; color: #082f49; margin-bottom: 5px;">${trip.name}</h2>
-                    <p style="font-size: 10px; color: #9ca3af; letter-spacing: 2px;">總花費 (HKD)</p>
-                    <h3 style="font-size: 32px; font-weight: 900; color: #082f49; margin: 10px 0 25px 0;">${total}</h3>
-                    <div style="text-align: left; background:#f0f9ff; padding:15px; border-radius:15px; margin-bottom:15px;">
-                        <p style="font-size:11px; color:#0369a1; font-weight:bold; border-bottom:1px solid #bae6fd; padding-bottom:5px; margin-bottom:10px;">總覽</p>
-                        ${overviewHTML.replace(/text-gray-500|dark:text-white|dark:text-gray-400|text-emerald-500|text-red-400/g, '')}
+                <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 2rem; padding: 30px 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); text-align: center; border: 1px solid rgba(255,255,255,0.6);">
+                    <h2 style="font-size: 26px; font-weight: 900; color: #082f49; margin: 0 0 5px 0;">${trip.name}</h2>
+                    <p style="font-size: 11px; color: #64748b; letter-spacing: 2px; margin: 0;">總花費 (HKD)</p>
+                    <h3 style="font-size: 38px; font-weight: 900; color: #0369a1; margin: 10px 0 25px 0;">${total}</h3>
+                    
+                    <div style="text-align: left; background:#f8fafc; padding:20px; border-radius:1.5rem; margin-bottom:20px; border: 1px solid #e2e8f0;">
+                        <p style="font-size:13px; color:#0369a1; font-weight:900; border-bottom:2px solid #bae6fd; padding-bottom:8px; margin-bottom:12px; letter-spacing: 1px;">成員總覽</p>
+                        <div style="color: #1e293b;">
+                            ${overviewHTML.replace(/text-gray-500|dark:[^\s"']+|text-emerald-500|text-red-400|text-white|text-gray-400/g, '')}
+                        </div>
                     </div>
-                    <div style="text-align: left;">
-                        ${settleHTML.replace(/dark:[^\s"']+/g, '').replace(/text-white/g, '')}
+                    
+                    <div style="text-align: left; background:#ffffff; padding:20px; border-radius:1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                        <div style="color: #1e293b;">
+                            ${settleHTML.replace(/dark:[^\s"']+/g, '').replace(/text-white|text-gray-500|text-gray-300|bg-sky-900|bg-sky-50|text-emerald-600/g, '')}
+                        </div>
                     </div>
-                    <div style="margin-top: 30px; padding-top: 15px; border-top: 1px dashed #e5e7eb;">
-                        <p style="font-size: 10px; color: #9ca3af; font-weight: bold; letter-spacing: 1px;">旅結 開支助手 生成</p>
+                    
+                    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px dashed #cbd5e1;">
+                        <span style="font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 2px;">旅結 開支助手 生成</span>
                     </div>
                 </div>
             `;
             document.body.appendChild(tempDiv);
 
             try {
-                const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true });
+                // 預先載入背景圖確保不會空白
+                const bgImg = new Image();
+                bgImg.crossOrigin = "anonymous";
+                bgImg.src = 'https://i.imgur.com/DRcZvHV.png';
+                await new Promise((resolve) => {
+                    bgImg.onload = resolve; bgImg.onerror = resolve; setTimeout(resolve, 1500);
+                });
+
+                const canvas = await html2canvas(tempDiv, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    allowTaint: true,
+                    backgroundColor: null
+                });
                 const link = document.createElement('a');
-                link.download = `${trip.name}_結算找數圖.png`;
+                link.download = `${trip.name}_結算圖.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             } catch (err) { alert("生成圖片失敗"); } finally { document.body.removeChild(tempDiv); }
