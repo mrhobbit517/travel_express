@@ -136,7 +136,6 @@
                 <!-- 1. 記帳頁 -->
                 <div id="p-add" class="space-y-4">
                     <div class="flex gap-2">
-                        <!-- 新增自訂類別功能 -->
                         <select id="i_cat" onchange="handleCatChange()" class="w-[70px] flex-none bg-white dark:bg-gray-700 px-1 py-4 rounded-2xl shadow-sm text-center font-bold outline-none"></select>
                         <input type="text" id="i_name" placeholder="項目名稱 (如：拉麵)" class="flex-1 min-w-0 bg-white dark:bg-gray-700 px-5 py-4 rounded-2xl shadow-sm dark:text-white outline-none">
                     </div>
@@ -196,16 +195,20 @@
                     <button id="btn-save-exp" onclick="h_saveExpense()" class="w-full bg-sky-950 dark:bg-sky-700 text-white py-5 rounded-3xl font-bold shadow-lg active:scale-95 transition-all">記錄開支</button>
                 </div>
 
-                <!-- 2. 紀錄頁 -->
+                <!-- 2. 紀錄頁 (更新排版及過濾器) -->
                 <div id="p-list" class="hidden space-y-3">
-                    <!-- 圖表過濾狀態顯示 -->
-                    <div id="filter-indicator" class="hidden flex justify-between items-center px-2 pb-2 border-b dark:border-gray-700">
-                        <span class="text-xs font-bold text-sky-600 dark:text-sky-400">現正過濾類別: <span id="filter-label" class="underline"></span></span>
-                        <button onclick="clearFilter()" class="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-lg">清除過濾</button>
-                    </div>
+                    <!-- 清空所有紀錄按鈕置頂 -->
+                    <button onclick="h_clearAll()" class="w-full py-2.5 text-[10px] text-red-500 border border-red-200 dark:border-red-900 rounded-xl font-bold bg-white/50 dark:bg-gray-800">清空所有紀錄</button>
                     
-                    <button onclick="h_clearAll()" class="w-full py-2.5 text-[10px] text-red-500 border border-red-200 dark:border-red-900 rounded-xl mb-3 font-bold bg-white/50 dark:bg-gray-800">清空所有紀錄</button>
-                    <div id="d_expList" class="space-y-1"></div>
+                    <!-- 紀錄頁專屬下拉過濾器 -->
+                    <div class="flex justify-between items-center bg-white/50 dark:bg-gray-800 px-3 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                        <select id="i_listFilter" onchange="applyListFilter()" class="text-xs bg-transparent dark:text-white outline-none font-bold flex-1 appearance-none cursor-pointer">
+                            <option value="">📊 顯示所有類別</option>
+                        </select>
+                        <button onclick="clearFilter()" id="btn-clear-filter" class="hidden text-[10px] text-gray-500 bg-gray-200 dark:bg-gray-700 px-3 py-1.5 rounded-lg ml-2 font-bold active:scale-95 transition-transform">清除過濾</button>
+                    </div>
+
+                    <div id="d_expList" class="space-y-1 mt-2"></div>
                 </div>
 
                 <!-- 3. 結算頁 -->
@@ -263,7 +266,6 @@
             }
         } catch(e) { allTrips = []; }
 
-        // 自訂類別系統
         let sysCats = [
             {v:'食', e:'🍴'}, {v:'住', e:'🏨'}, {v:'行', e:'🚗'},
             {v:'玩', e:'🎟️'}, {v:'購', e:'🛍️'}, {v:'機', e:'✈️'}, {v:'雜', e:'📦'}
@@ -275,16 +277,30 @@
         let currentHomeTab = 'active';
         let editExpIdx = -1; 
         let tempReceiptBase64 = null;
-        let chartActiveFilter = null; // 圖表過濾器狀態
+        let chartActiveFilter = null; 
 
-        // 渲染類別選單
-        function renderCatOptions() {
-            const el = document.getElementById('i_cat');
-            const all = [...sysCats, ...customCats];
-            el.innerHTML = all.map(c => `<option value="${c.v}">${c.e}</option>`).join('') + `<option value="ADD_NEW" class="text-sky-600">➕ 新增</option>`;
+        // 獲取純 Emoji (紀錄頁專用)
+        function getCatEmoji(val) {
+            const found = [...sysCats, ...customCats].find(c => c.v === val);
+            return found ? found.e : '📌';
         }
 
-        // 處理新增類別
+        // 渲染類別選單 (包含記帳頁同紀錄頁過濾器)
+        function renderCatOptions() {
+            const all = [...sysCats, ...customCats];
+            
+            // 記帳頁選單
+            const el = document.getElementById('i_cat');
+            el.innerHTML = all.map(c => `<option value="${c.v}">${c.e}</option>`).join('') + `<option value="ADD_NEW" class="text-sky-600">➕ 新增</option>`;
+            
+            // 紀錄頁過濾選單
+            const listFilter = document.getElementById('i_listFilter');
+            if(listFilter) {
+                listFilter.innerHTML = `<option value="">📊 顯示所有類別</option>` + all.map(c => `<option value="${c.v}">${c.e} ${c.v}</option>`).join('');
+                if(chartActiveFilter) listFilter.value = chartActiveFilter;
+            }
+        }
+
         function handleCatChange() {
             const el = document.getElementById('i_cat');
             if(el.value === 'ADD_NEW') {
@@ -303,7 +319,7 @@
             }
         }
         
-        renderCatOptions(); // 初始化選單
+        renderCatOptions();
 
         // --- 深色模式切換 ---
         function toggleDarkMode() {
@@ -347,7 +363,7 @@
             } catch(e) {}
         }
 
-        // --- 多國貨幣處理 ---
+        // --- 多國貨幣 ---
         async function checkCurrency() {
             const curr = document.getElementById('i_currency').value;
             const rateBox = document.getElementById('fx_rate_box');
@@ -392,7 +408,7 @@
             }
         }
 
-        // --- 相片壓縮與上傳 ---
+        // --- 相片壓縮 ---
         function previewReceipt(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -427,12 +443,7 @@
             document.getElementById('receipt_del').classList.add('hidden');
         }
 
-        function showReceipt(base64) {
-            document.getElementById('img-modal-src').src = base64;
-            document.getElementById('img-modal').classList.remove('hidden');
-        }
-
-        // --- 核心邏輯 ---
+        // --- 核心 ---
         function h_createTrip() {
             const name = document.getElementById('newTripInput').value.trim();
             if(!name) return;
@@ -469,6 +480,7 @@
             document.getElementById('i_payer').innerHTML = trip.members.map(m => `<option value="${m.n}" ${m.n === trip.defaultPayer ? 'selected':''}>${m.n}</option>`).join('');
             document.getElementById('i_defaultPayer').innerHTML = trip.members.map(m => `<option value="${m.n}" ${m.n === trip.defaultPayer ? 'selected':''}>${m.n}</option>`).join('');
             if (editExpIdx === -1) toggleSplitMode();
+            renderCatOptions(); // 確保每次都更新最新下拉選單
             renderExpenseList();
             renderMemberList();
             h_updateChart();
@@ -531,36 +543,33 @@
             h_switchTab('list');
         }
 
-        // Swipe 狀態變數
+        // --- Swipe 邏輯 ---
         let swipeStartX = 0;
         let swipeStartY = 0;
         
-        function swipeStart(e, el) {
-            swipeStartX = e.touches[0].clientX;
-            swipeStartY = e.touches[0].clientY;
-            el.style.transition = 'none';
-        }
+        function swipeStart(e, el) { swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY; el.style.transition = 'none'; }
         function swipeMove(e, el) {
             let dx = e.touches[0].clientX - swipeStartX;
             let dy = e.touches[0].clientY - swipeStartY;
-            // 只有水平滑動大於垂直滑動時才執行 (避免影響上下滾動)
-            if (Math.abs(dx) > Math.abs(dy) && dx < 0 && dx > -90) {
-                el.style.transform = `translateX(${dx}px)`;
-            }
+            if (Math.abs(dx) > Math.abs(dy) && dx < 0 && dx > -90) el.style.transform = `translateX(${dx}px)`;
         }
         function swipeEnd(e, el) {
             let dx = e.changedTouches[0].clientX - swipeStartX;
             el.style.transition = 'transform 0.2s ease-out';
-            if(dx < -45) {
-                el.style.transform = `translateX(-80px)`; // 鎖定顯示刪除按鈕
-            } else {
-                el.style.transform = `translateX(0)`; // 縮返去
-            }
+            if(dx < -45) el.style.transform = `translateX(-80px)`;
+            else el.style.transform = `translateX(0)`;
         }
         
+        // --- 紀錄過濾邏輯 ---
+        function applyListFilter() {
+            const val = document.getElementById('i_listFilter').value;
+            chartActiveFilter = val ? val : null;
+            renderExpenseList();
+        }
+
         function clearFilter() {
             chartActiveFilter = null;
-            document.getElementById('filter-indicator').classList.add('hidden');
+            document.getElementById('i_listFilter').value = "";
             renderExpenseList();
         }
 
@@ -568,9 +577,8 @@
             const trip = allTrips[activeIdx];
             
             if (trip.expenses.length === 0) {
-                // 套用指定貓貓圖案
                 document.getElementById('d_expList').innerHTML = `
-                    <div class="text-center py-12 opacity-80">
+                    <div class="text-center py-12 opacity-80 mt-4">
                         <img src="https://i.imgur.com/bKq0Gsr.png" class="w-24 h-24 mx-auto mb-4 drop-shadow-md object-contain">
                         <p class="text-xs font-bold text-gray-500 dark:text-gray-400">仲未有任何開支紀錄喵～<br>快啲記低第一筆啦！</p>
                     </div>`;
@@ -579,17 +587,16 @@
 
             let displayList = trip.expenses.map((e, idx) => ({...e, originalIdx: idx}));
             
-            // 處理圖表過濾
+            const clearBtn = document.getElementById('btn-clear-filter');
             if(chartActiveFilter) {
                 displayList = displayList.filter(e => e.cat === chartActiveFilter);
-                document.getElementById('filter-indicator').classList.remove('hidden');
-                document.getElementById('filter-label').innerText = chartActiveFilter;
+                clearBtn.classList.remove('hidden');
             } else {
-                document.getElementById('filter-indicator').classList.add('hidden');
+                clearBtn.classList.add('hidden');
             }
             
             if(displayList.length === 0 && chartActiveFilter) {
-                 document.getElementById('d_expList').innerHTML = `<p class="text-center py-10 text-xs text-gray-400">此類別沒有紀錄。</p>`;
+                 document.getElementById('d_expList').innerHTML = `<p class="text-center py-10 text-xs text-gray-400 mt-4">此類別沒有紀錄。</p>`;
                  return;
             }
 
@@ -602,7 +609,7 @@
             const sorted = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
             
             document.getElementById('d_expList').innerHTML = sorted.map(d => `
-                <div class="space-y-2 mb-4">
+                <div class="space-y-2 mb-4 mt-2">
                     <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 pl-2 uppercase">${d}</p>
                     ${groups[d].map(e => `
                         <div class="swipe-wrap">
@@ -613,7 +620,7 @@
                                  ontouchend="swipeEnd(event, this)">
                                 <div class="min-w-0 flex-1" onclick="h_editExp(${e.originalIdx})">
                                     <p class="text-xs font-bold text-sky-950 dark:text-white truncate flex items-center">
-                                        ${e.cat} | ${e.name}
+                                        <span class="text-base mr-1.5">${getCatEmoji(e.cat)}</span> | <span class="ml-1.5">${e.name}</span>
                                         ${e.receipt ? `<span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 rounded-full ml-2">📸</span>` : ''}
                                     </p>
                                     <p class="text-[9px] text-gray-500 dark:text-gray-400 mt-1">
@@ -641,11 +648,10 @@
             
             document.getElementById('i_date').value = exp.date || '';
             
-            // 處理載入可能存在嘅自訂類別
             let catEl = document.getElementById('i_cat');
             let catExists = Array.from(catEl.options).some(opt => opt.value === exp.cat);
             if(!catExists && exp.cat) {
-                customCats.push({v: exp.cat, e: '📌'}); // 臨時預設
+                customCats.push({v: exp.cat, e: '📌'});
                 localStorage.setItem('customCats', JSON.stringify(customCats));
                 renderCatOptions();
             }
@@ -688,7 +694,6 @@
                 for(let p in e.split) { if (bal[p] !== undefined) { bal[p] -= e.split[p]; shareInfo[p] += e.split[p]; } }
             });
 
-            // 移除 truncate, 改用 break-all 以確保長名唔會被切斷
             document.getElementById('d_overview').innerHTML = trip.members.map(m => `
                 <div class="flex justify-between text-[11px] py-1.5 border-b border-gray-50 dark:border-gray-700 last:border-0 items-center">
                     <span class="font-bold w-[30%] break-all pr-1 dark:text-white">${m.n}</span>
@@ -708,7 +713,6 @@
             }
             
             if(!g.length) {
-                // 套用指定貓貓圖案
                 res.innerHTML = `
                     <div class="text-center py-8 text-emerald-600 dark:text-emerald-400 font-bold">
                         <img src="https://i.imgur.com/bKq0Gsr.png" class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
@@ -799,7 +803,6 @@
         function h_updateChart() {
             const trip = allTrips[activeIdx];
             const cats = {};
-            // 初始化自訂同預設類別
             [...sysCats, ...customCats].forEach(c => cats[c.v] = 0);
             
             trip.expenses.forEach(e => {
@@ -826,17 +829,21 @@
                     responsive: true, maintainAspectRatio: false, 
                     plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 10 } } } }, 
                     cutout: '70%',
-                    // 圖表點擊過濾功能
+                    // 完美修復圖表過濾點擊
                     onClick: (e, elements, chart) => {
                         if(elements.length > 0) {
                             const idx = elements[0].index;
                             const label = chart.data.labels[idx];
                             chartActiveFilter = (chartActiveFilter === label) ? null : label;
-                            h_switchTab('list');
                         } else {
                             chartActiveFilter = null;
-                            renderExpenseList();
                         }
+                        
+                        // 同步更新紀錄頁嘅過濾選單狀態
+                        const filterEl = document.getElementById('i_listFilter');
+                        if(filterEl) filterEl.value = chartActiveFilter || "";
+                        
+                        h_switchTab('list');
                     }
                 } 
             });
@@ -858,7 +865,6 @@
             reader.readAsText(e.target.files[0]);
         }
 
-        // 完美修復手機結算圖排版，加入 break-all 強制換行
         async function generateImage() {
             const trip = allTrips[activeIdx];
             const overviewHTML = document.getElementById('d_overview').innerHTML;
@@ -875,10 +881,9 @@
             tempDiv.style.backgroundSize = 'cover';
             tempDiv.style.backgroundPosition = 'center';
             
-            // 加入 word-wrap, word-break 強制換行，並移除可能導致隱藏嘅類別
             let fixedOverviewHTML = overviewHTML
                 .replace(/text-gray-500|dark:[^\s"']+|text-emerald-500|text-red-400|text-white|text-gray-400/g, '')
-                .replace(/break-all/g, '') // 移除原有 class, 改為 inline style
+                .replace(/break-all/g, '')
                 .replace(/<span class="font-bold w-\[30%\]/g, '<span style="font-weight:bold; width:30%; word-wrap:break-word; word-break:break-all; white-space:normal;" ');
 
             let fixedSettleHTML = settleHTML
@@ -906,18 +911,20 @@
                         </div>
                     </div>
                     
-                    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px dashed #cbd5e1;">
-                        <span style="font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 2px;">旅結 開支助手 生成</span>
+                    <!-- 結算圖底部加入小貓圖 -->
+                    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px dashed #cbd5e1; text-align: center;">
+                        <span style="font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 2px; vertical-align: middle;">旅結 開支助手 生成</span>
+                        <img src="https://i.imgur.com/SSROc13.png" style="width: 22px; height: 22px; object-fit: contain; vertical-align: middle; margin-left: 4px; margin-bottom: 2px;">
                     </div>
                 </div>
             `;
             document.body.appendChild(tempDiv);
 
             try {
-                // 預先載入背景圖同貓貓圖確保唔會空白
                 const loadImages = [
                     'https://i.imgur.com/DRcZvHV.png',
-                    'https://i.imgur.com/bKq0Gsr.png'
+                    'https://i.imgur.com/bKq0Gsr.png',
+                    'https://i.imgur.com/SSROc13.png'
                 ].map(src => {
                     return new Promise(resolve => {
                         const img = new Image();
