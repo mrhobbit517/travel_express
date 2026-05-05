@@ -20,11 +20,12 @@
             overscroll-behavior: none; margin: 0; padding: 0; 
             font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; 
         }
-        body { background-color: #111827; display: flex; justify-content: center; min-height: 100vh; }
+        body { background-color: #111827; display: flex; justify-content: center; height: 100vh; height: 100dvh; overflow: hidden; }
         
+        /* 修復背景拉長問題：鎖定容器高度，內容內部捲動 */
         #app-wrapper {
-            width: 100%; max-width: 480px; min-height: 100vh; position: relative;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); overflow-x: hidden; display: flex; flex-direction: column;
+            width: 100%; max-width: 480px; height: 100vh; height: 100dvh; position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); overflow: hidden; display: flex; flex-direction: column;
         }
         
         .app-bg-fixed { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -45,7 +46,6 @@
         }
         
         input, select { box-sizing: border-box !important; font-size: 16px !important; max-width: 100%; }
-        /* 修復深色模式下拉選單白底白字問題 */
         select option { color: inherit; background-color: inherit; }
         
         .tab-active { color: #0369a1; border-bottom: 3px solid #0369a1; font-weight: 700; }
@@ -54,22 +54,21 @@
         .modal-bg { background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
         #i_splitList { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         
-        /* Swipe Delete 專用 */
         .swipe-wrap { position: relative; overflow: hidden; border-radius: 1rem; margin-bottom: 0.75rem; }
         .swipe-delete-btn { position: absolute; top: 0; right: 0; bottom: 0; width: 80px; background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 1rem; }
         .swipe-content { position: relative; z-index: 10; transition: transform 0.2s ease; background: inherit; }
 
-        /* 流暢過場動畫 */
+        /* 更明顯的流暢過場動畫 */
         .fade-in-up {
-            animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(10px); }
+            0% { opacity: 0; transform: translateY(15px); }
             100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 transition-colors duration-300">
+<body class="text-gray-900 dark:text-gray-100 transition-colors duration-300">
     
     <div id="app-wrapper" class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div class="app-bg-fixed"><img src="https://i.imgur.com/DRcZvHV.png" alt="bg"></div>
@@ -86,7 +85,7 @@
             </button>
         </div>
 
-        <div id="app-content" class="hidden opacity-0 transition-opacity duration-500 relative z-10 flex flex-col h-full">
+        <div id="app-content" class="hidden opacity-0 transition-opacity duration-500 relative z-10 flex flex-col h-full overflow-hidden">
             
             <!-- 首頁視圖 -->
             <div id="view-home" class="relative px-5 pt-12 pb-20 flex-1 overflow-y-auto">
@@ -138,7 +137,7 @@
                     </div>
                 </div>
 
-                <div class="flex mb-6 border-b border-gray-100 dark:border-gray-800 text-sm bg-white/40 dark:bg-gray-800/40 backdrop-blur-md rounded-xl p-1">
+                <div class="flex mb-6 border-b border-gray-100 dark:border-gray-800 text-sm bg-white/40 dark:bg-gray-800/40 backdrop-blur-md rounded-xl p-1 sticky top-0 z-20">
                     <button onclick="h_switchTab('add'); resetForm();" id="tab-add" class="flex-1 py-3 rounded-lg tab-active">記帳</button>
                     <button onclick="h_switchTab('list')" id="tab-list" class="flex-1 py-3 rounded-lg text-gray-400">紀錄</button>
                     <button onclick="h_switchTab('settle')" id="tab-settle" class="flex-1 py-3 rounded-lg text-gray-400">結算</button>
@@ -616,7 +615,6 @@
             });
             const sorted = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
             
-            // 升級：Timeline UI 結構
             document.getElementById('d_expList').innerHTML = `
                 <div class="relative pl-5 border-l-2 border-sky-100 dark:border-gray-700 ml-2 mt-4 pb-2">
                     ${sorted.map(d => `
@@ -755,12 +753,12 @@
             }
         }
 
-        // --- 修復：帶過場動畫嘅切換 ---
+        // --- 強制觸發：帶過場動畫嘅切換 ---
         function h_switchTab(tab) {
             ['add', 'list', 'settle', 'mem'].forEach(t => { 
                 const panel = document.getElementById(`p-${t}`);
                 panel.classList.add('hidden'); 
-                panel.classList.remove('fade-in-up'); // 清除舊動畫狀態
+                panel.classList.remove('fade-in-up'); 
                 
                 document.getElementById(`tab-${t}`).classList.remove('tab-active', 'bg-white', 'dark:bg-gray-700', 'shadow-sm'); 
                 document.getElementById(`tab-${t}`).classList.add('text-gray-400');
@@ -769,8 +767,10 @@
             const activePanel = document.getElementById(`p-${tab}`);
             activePanel.classList.remove('hidden'); 
             
-            // 強制重繪以觸發動畫
-            void activePanel.offsetWidth;
+            // 強制瀏覽器重繪 (Reflow)，保證 CSS 動畫每次都成功觸發
+            activePanel.style.animation = 'none';
+            void activePanel.offsetHeight; 
+            activePanel.style.animation = null;
             activePanel.classList.add('fade-in-up');
             
             document.getElementById(`tab-${tab}`).classList.remove('text-gray-400');
@@ -922,29 +922,28 @@
                 .replace(/break-all/g, '')
                 .replace(/<span class="text-xs font-bold flex-1/g, '<span style="font-size:12px; font-weight:bold; flex:1; word-wrap:break-word; word-break:break-all; white-space:normal;" ');
 
+            // 透明度降為 0.7，移除貓貓圖片
             tempDiv.innerHTML = `
-                <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 2rem; padding: 30px 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); text-align: center; border: 1px solid rgba(255,255,255,0.6);">
+                <div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 2rem; padding: 30px 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); text-align: center; border: 1px solid rgba(255,255,255,0.6);">
                     <h2 style="font-size: 26px; font-weight: 900; color: #082f49; margin: 0 0 5px 0; word-wrap:break-word; word-break:break-all;">${trip.name}</h2>
                     <p style="font-size: 11px; color: #64748b; letter-spacing: 2px; margin: 0;">總花費 (HKD)</p>
                     <h3 style="font-size: 38px; font-weight: 900; color: #0369a1; margin: 10px 0 25px 0;">${total}</h3>
                     
-                    <div style="text-align: left; background:#f8fafc; padding:20px; border-radius:1.5rem; margin-bottom:20px; border: 1px solid #e2e8f0;">
+                    <div style="text-align: left; background: rgba(248,250,252,0.8); padding:20px; border-radius:1.5rem; margin-bottom:20px; border: 1px solid rgba(226,232,240,0.8);">
                         <p style="font-size:13px; color:#0369a1; font-weight:900; border-bottom:2px solid #bae6fd; padding-bottom:8px; margin-bottom:12px; letter-spacing: 1px;">成員總覽</p>
                         <div style="color: #1e293b;">
                             ${fixedOverviewHTML}
                         </div>
                     </div>
                     
-                    <div style="text-align: left; background:#ffffff; padding:20px; border-radius:1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="text-align: left; background: rgba(255,255,255,0.8); padding:20px; border-radius:1.5rem; border: 1px solid rgba(226,232,240,0.8); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                         <div style="color: #1e293b;">
                             ${fixedSettleHTML}
                         </div>
                     </div>
                     
-                    <!-- 完美修復：文字絕對置中，貓圖2倍大 (88px) 並釘死右下角 -->
-                    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px dashed #cbd5e1; position: relative; text-align: center; height: 88px;">
-                        <span style="font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 2px; line-height: 88px;">旅結 開支助手 生成</span>
-                        <img src="https://i.imgur.com/SSROc13.png" style="width: 88px; height: 88px; position: absolute; right: 0; bottom: 0; object-fit: contain;">
+                    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px dashed rgba(203,213,225,0.8); position: relative; text-align: center;">
+                        <span style="font-size: 11px; color: #64748b; font-weight: bold; letter-spacing: 2px;">旅結 開支助手 生成</span>
                     </div>
                 </div>
             `;
@@ -953,8 +952,7 @@
             try {
                 const loadImages = [
                     'https://i.imgur.com/DRcZvHV.png',
-                    'https://i.imgur.com/bKq0Gsr.png',
-                    'https://i.imgur.com/SSROc13.png'
+                    'https://i.imgur.com/bKq0Gsr.png'
                 ].map(src => {
                     return new Promise(resolve => {
                         const img = new Image();
