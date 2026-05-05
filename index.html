@@ -45,6 +45,9 @@
         }
         
         input, select { box-sizing: border-box !important; font-size: 16px !important; max-width: 100%; }
+        /* 修復深色模式下拉選單白底白字問題 */
+        select option { color: inherit; background-color: inherit; }
+        
         .tab-active { color: #0369a1; border-bottom: 3px solid #0369a1; font-weight: 700; }
         .dark .tab-active { color: #38bdf8; border-bottom: 3px solid #38bdf8; }
         .safe-pb { padding-bottom: env(safe-area-inset-bottom, 30px); }
@@ -136,7 +139,7 @@
                 <!-- 1. 記帳頁 -->
                 <div id="p-add" class="space-y-4">
                     <div class="flex gap-2">
-                        <select id="i_cat" onchange="handleCatChange()" class="w-[70px] flex-none bg-white dark:bg-gray-700 px-1 py-4 rounded-2xl shadow-sm text-center font-bold outline-none"></select>
+                        <select id="i_cat" onchange="handleCatChange()" class="w-[70px] flex-none bg-white dark:bg-gray-700 dark:text-white px-1 py-4 rounded-2xl shadow-sm text-center font-bold outline-none"></select>
                         <input type="text" id="i_name" placeholder="項目名稱 (如：拉麵)" class="flex-1 min-w-0 bg-white dark:bg-gray-700 px-5 py-4 rounded-2xl shadow-sm dark:text-white outline-none">
                     </div>
 
@@ -195,17 +198,18 @@
                     <button id="btn-save-exp" onclick="h_saveExpense()" class="w-full bg-sky-950 dark:bg-sky-700 text-white py-5 rounded-3xl font-bold shadow-lg active:scale-95 transition-all">記錄開支</button>
                 </div>
 
-                <!-- 2. 紀錄頁 (更新排版及過濾器) -->
+                <!-- 2. 紀錄頁 (更新排版: 過濾與清空同一行) -->
                 <div id="p-list" class="hidden space-y-3">
-                    <!-- 清空所有紀錄按鈕置頂 -->
-                    <button onclick="h_clearAll()" class="w-full py-2.5 text-[10px] text-red-500 border border-red-200 dark:border-red-900 rounded-xl font-bold bg-white/50 dark:bg-gray-800">清空所有紀錄</button>
-                    
-                    <!-- 紀錄頁專屬下拉過濾器 -->
-                    <div class="flex justify-between items-center bg-white/50 dark:bg-gray-800 px-3 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                        <select id="i_listFilter" onchange="applyListFilter()" class="text-xs bg-transparent dark:text-white outline-none font-bold flex-1 appearance-none cursor-pointer">
-                            <option value="">📊 顯示所有類別</option>
-                        </select>
-                        <button onclick="clearFilter()" id="btn-clear-filter" class="hidden text-[10px] text-gray-500 bg-gray-200 dark:bg-gray-700 px-3 py-1.5 rounded-lg ml-2 font-bold active:scale-95 transition-transform">清除過濾</button>
+                    <div class="flex justify-between items-center gap-2 mb-2">
+                        <!-- 下拉過濾器 (加上 dark:bg-gray-800 確保深色模式文字可見) -->
+                        <div class="flex-1 bg-white/50 dark:bg-gray-800 px-3 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center">
+                            <select id="i_listFilter" onchange="applyListFilter()" class="text-xs bg-transparent dark:text-white dark:bg-gray-800 outline-none font-bold flex-1 cursor-pointer appearance-none">
+                                <option value="">📊 顯示所有類別</option>
+                            </select>
+                        </div>
+                        <button onclick="clearFilter()" id="btn-clear-filter" class="hidden shrink-0 text-[10px] text-gray-500 bg-gray-200 dark:bg-gray-700 px-3 py-2.5 rounded-xl font-bold active:scale-95 transition-transform">清除過濾</button>
+                        <!-- 清空按鈕 -->
+                        <button onclick="h_clearAll()" class="shrink-0 py-2.5 px-3 text-[10px] text-red-500 border border-red-200 dark:border-red-900 rounded-xl font-bold bg-white/50 dark:bg-gray-800">清空紀錄</button>
                     </div>
 
                     <div id="d_expList" class="space-y-1 mt-2"></div>
@@ -285,7 +289,7 @@
             return found ? found.e : '📌';
         }
 
-        // 渲染類別選單 (包含記帳頁同紀錄頁過濾器)
+        // 渲染類別選單 (包含 Emoji + 完整文字)
         function renderCatOptions() {
             const all = [...sysCats, ...customCats];
             
@@ -293,7 +297,7 @@
             const el = document.getElementById('i_cat');
             el.innerHTML = all.map(c => `<option value="${c.v}">${c.e}</option>`).join('') + `<option value="ADD_NEW" class="text-sky-600">➕ 新增</option>`;
             
-            // 紀錄頁過濾選單
+            // 紀錄頁過濾選單 (顯示Emoji + 文字)
             const listFilter = document.getElementById('i_listFilter');
             if(listFilter) {
                 listFilter.innerHTML = `<option value="">📊 顯示所有類別</option>` + all.map(c => `<option value="${c.v}">${c.e} ${c.v}</option>`).join('');
@@ -480,7 +484,7 @@
             document.getElementById('i_payer').innerHTML = trip.members.map(m => `<option value="${m.n}" ${m.n === trip.defaultPayer ? 'selected':''}>${m.n}</option>`).join('');
             document.getElementById('i_defaultPayer').innerHTML = trip.members.map(m => `<option value="${m.n}" ${m.n === trip.defaultPayer ? 'selected':''}>${m.n}</option>`).join('');
             if (editExpIdx === -1) toggleSplitMode();
-            renderCatOptions(); // 確保每次都更新最新下拉選單
+            renderCatOptions(); 
             renderExpenseList();
             renderMemberList();
             h_updateChart();
@@ -829,7 +833,6 @@
                     responsive: true, maintainAspectRatio: false, 
                     plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 10 } } } }, 
                     cutout: '70%',
-                    // 完美修復圖表過濾點擊
                     onClick: (e, elements, chart) => {
                         if(elements.length > 0) {
                             const idx = elements[0].index;
@@ -839,10 +842,11 @@
                             chartActiveFilter = null;
                         }
                         
-                        // 同步更新紀錄頁嘅過濾選單狀態
                         const filterEl = document.getElementById('i_listFilter');
                         if(filterEl) filterEl.value = chartActiveFilter || "";
                         
+                        // 修復：必須加入呢行先可以即時刷新列表！
+                        renderExpenseList();
                         h_switchTab('list');
                     }
                 } 
@@ -911,10 +915,10 @@
                         </div>
                     </div>
                     
-                    <!-- 結算圖底部加入小貓圖 -->
-                    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px dashed #cbd5e1; text-align: center;">
-                        <span style="font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 2px; vertical-align: middle;">旅結 開支助手 生成</span>
-                        <img src="https://i.imgur.com/SSROc13.png" style="width: 22px; height: 22px; object-fit: contain; vertical-align: middle; margin-left: 4px; margin-bottom: 2px;">
+                    <!-- 修復：結算圖底部加入小貓圖 (靠右下角排列並放大2倍) -->
+                    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px dashed #cbd5e1; text-align: right;">
+                        <span style="font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 2px; vertical-align: middle; margin-right: 8px;">旅結 開支助手 生成</span>
+                        <img src="https://i.imgur.com/SSROc13.png" style="width: 44px; height: 44px; vertical-align: middle; display: inline-block;">
                     </div>
                 </div>
             `;
