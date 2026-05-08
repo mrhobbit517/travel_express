@@ -256,7 +256,7 @@
 
     <div id="img-modal" class="hidden fixed inset-0 z-[200] modal-bg flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
         <img id="img-modal-src" src="" class="max-w-full max-h-[80vh] rounded-xl shadow-2xl object-contain" onclick="event.stopPropagation()">
-        <button class="absolute top-6 right-6 text-white text-3xl font-bold z-10" onclick="document.getElementById('img-modal').classList.add('hidden')">&times;</button>
+        <button class="absolute top-6 right-6 text-white text-3xl font-bold z-[210]" onclick="document.getElementById('img-modal').classList.add('hidden')">&times;</button>
     </div>
 
     <script>
@@ -283,13 +283,22 @@
         let tempReceiptBase64 = null;
         let chartActiveFilter = null;
 
-        // 獲取純 Emoji
+        // 打開收據相片 (不會觸發編輯)
+        function h_viewReceipt(event, imgSrc) {
+            event.stopPropagation();
+            const modal = document.getElementById('img-modal');
+            const img = document.getElementById('img-modal-src');
+            if (modal && img && imgSrc) {
+                img.src = imgSrc;
+                modal.classList.remove('hidden');
+            }
+        }
+
         function getCatEmoji(val) {
             const found = [...sysCats, ...customCats].find(c => c.v === val);
             return found ? found.e : '📌';
         }
 
-        // 渲染類別選單
         function renderCatOptions() {
             const all = [...sysCats, ...customCats];
             const el = document.getElementById('i_cat');
@@ -310,7 +319,6 @@
                     const parts = input.trim().split(' ');
                     const e = parts[0] || '📌';
                     const v = parts.slice(1).join(' ') || e;
-                    // 防重複加入
                     if(!sysCats.find(c=>c.v===v) && !customCats.find(c=>c.v===v)) {
                         customCats.push({v, e});
                         localStorage.setItem('customCats', JSON.stringify(customCats));
@@ -322,7 +330,6 @@
                 }
             }
             
-            // 檢查當前選擇是否自訂類別，決定是否顯示刪除按鈕
             const isCustom = customCats.some(c => c.v === el.value);
             const delBtn = document.getElementById('btn_del_cat');
             if(delBtn) {
@@ -331,7 +338,6 @@
             }
         }
 
-        // 刪除自訂類別函數
         function h_deleteCustomCat() {
             const el = document.getElementById('i_cat');
             const val = el.value;
@@ -340,13 +346,12 @@
                 localStorage.setItem('customCats', JSON.stringify(customCats));
                 renderCatOptions();
                 el.value = sysCats[0].v;
-                handleCatChange(); // 更新按鈕顯示狀態
+                handleCatChange(); 
             }
         }
         
         renderCatOptions();
 
-        // --- 深色模式切換 ---
         function toggleDarkMode() {
             const html = document.documentElement;
             html.classList.toggle('dark');
@@ -363,12 +368,12 @@
 
         function h_saveData() { 
             try {
-                localStorage.setItem('exp_v8_final', JSON.stringify(allTrips));
+                localStorage.setItem('exp_v8_final', JSON.stringify(allTrips)); 
             } catch(e) {
                 alert("儲存空間已滿！請清除部分舊紀錄或收據相片。");
             }
             renderHomeList(currentHomeTab);
-            if(activeIdx !== -1) h_refreshDetail();
+            if(activeIdx !== -1) h_refreshDetail(); 
         }
 
         function enterApp() {
@@ -387,7 +392,6 @@
             } catch(e) {}
         }
 
-        // --- 多國貨幣 ---
         async function checkCurrency() {
             const curr = document.getElementById('i_currency').value;
             const rateBox = document.getElementById('fx_rate_box');
@@ -408,7 +412,7 @@
                         calcHkd();
                     }
                 } catch(e) { 
-                    document.getElementById('fx_hint').innerText = "請手動輸入";
+                    document.getElementById('fx_hint').innerText = "請手動輸入"; 
                 }
             }
         }
@@ -432,7 +436,6 @@
             }
         }
 
-        // --- 相片壓縮 ---
         function previewReceipt(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -467,22 +470,6 @@
             document.getElementById('receipt_del').classList.add('hidden');
         }
 
-        function showReceipt(base64) {
-            document.getElementById('img-modal-src').src = base64;
-            document.getElementById('img-modal').classList.remove('hidden');
-        }
-
-        // 新增：點擊查看收據圖片 (不會觸發編輯)
-        function h_viewReceipt(event, expIdx) {
-            event.stopPropagation();
-            const exp = allTrips[activeIdx].expenses.find(e => e.originalIdx === expIdx) || allTrips[activeIdx].expenses[expIdx];
-            if (exp && exp.receipt) {
-                document.getElementById('img-modal-src').src = exp.receipt;
-                document.getElementById('img-modal').classList.remove('hidden');
-            }
-        }
-
-        // --- 核心 ---
         function h_createTrip() {
             const name = document.getElementById('newTripInput').value.trim();
             if(!name) return;
@@ -545,6 +532,7 @@
             const rate = parseFloat(document.getElementById('i_rate').value) || 1;
             
             if(!inputAmt) return alert("請輸入金額");
+            
             const amt = currency === 'HKD' ? inputAmt : parseFloat((inputAmt * rate).toFixed(2));
             const date = document.getElementById('i_date').value;
             const cat = document.getElementById('i_cat').value;
@@ -572,6 +560,7 @@
                 name, amt, currency, originalAmt: inputAmt, rate, 
                 date, cat, payer, split, splitType: mode, receipt: tempReceiptBase64 
             };
+
             if (editExpIdx !== -1) allTrips[activeIdx].expenses[editExpIdx] = expData;
             else allTrips[activeIdx].expenses.push(expData);
             
@@ -580,12 +569,9 @@
             h_switchTab('list');
         }
 
-        // --- Swipe 邏輯 ---
         let swipeStartX = 0;
         let swipeStartY = 0;
-        
-        function swipeStart(e, el) { swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY; el.style.transition = 'none';
-        }
+        function swipeStart(e, el) { swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY; el.style.transition = 'none'; }
         function swipeMove(e, el) {
             let dx = e.touches[0].clientX - swipeStartX;
             let dy = e.touches[0].clientY - swipeStartY;
@@ -598,7 +584,6 @@
             else el.style.transform = `translateX(0)`;
         }
         
-        // --- 紀錄過濾與時間軸邏輯 ---
         function applyListFilter() {
             const val = document.getElementById('i_listFilter').value;
             chartActiveFilter = val ? val : null;
@@ -643,12 +628,12 @@
                 groups[d].push(e);
             });
             const sorted = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
+            
             document.getElementById('d_expList').innerHTML = `
                 <div class="relative pl-5 border-l-2 border-sky-100 dark:border-gray-700 ml-2 mt-4 pb-2">
                     ${sorted.map(d => `
                         <div class="mb-6 relative">
                             <div class="absolute w-3 h-3 bg-sky-400 dark:bg-sky-500 rounded-full -left-[27px] top-0.5 border-2 border-white dark:border-gray-900 shadow-sm"></div>
-                            
                             <p class="text-[10px] font-bold text-sky-800 dark:text-sky-300 uppercase tracking-widest mb-3">${d}</p>
                             
                             <div class="space-y-2">
@@ -662,7 +647,7 @@
                                             <div class="min-w-0 flex-1" onclick="h_editExp(${e.originalIdx})">
                                                 <p class="text-xs font-bold text-sky-950 dark:text-white truncate flex items-center">
                                                     <span class="text-base mr-1.5">${getCatEmoji(e.cat)}</span> | <span class="ml-1.5">${e.name}</span>
-                                                    ${e.receipt ? `<span onclick="h_viewReceipt(event, ${e.originalIdx})" class="text-[10px] bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300 px-2 py-0.5 rounded-full ml-2 cursor-pointer shadow-sm active:scale-95 inline-flex items-center relative z-10">📸 睇單</span>` : ''}
+                                                    ${e.receipt ? `<span onclick="h_viewReceipt(event, '${e.receipt}')" class="text-[10px] bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300 px-2 py-0.5 rounded-full ml-2 cursor-pointer shadow-sm active:scale-95 inline-flex items-center relative z-10">📸 睇單</span>` : ''}
                                                 </p>
                                                 <p class="text-[9px] text-gray-500 dark:text-gray-400 mt-1">
                                                     付: ${e.payer} · 分: ${Object.keys(e.split).length}人 
@@ -701,7 +686,6 @@
             }
             catEl.value = exp.cat;
             handleCatChange();
-            // 更新類別刪除按鈕狀態
             
             document.getElementById('i_payer').value = exp.payer;
             if (exp.receipt) {
@@ -741,13 +725,13 @@
                 <div class="flex justify-between text-[11px] py-1.5 border-b border-gray-50 dark:border-gray-700 last:border-0 items-center">
                     <span class="font-bold w-[30%] break-all pr-1 dark:text-white">${m.n}</span>
                     <span class="w-[20%] text-center text-gray-500">付 $${paidInfo[m.n].toFixed(0)}</span>
-                    <span class="w-[20%] 
-text-center text-gray-500">夾 $${shareInfo[m.n].toFixed(0)}</span>
+                    <span class="w-[20%] text-center text-gray-500">夾 $${shareInfo[m.n].toFixed(0)}</span>
                     <span class="w-[30%] text-right font-bold ${bal[m.n] > 0 ? 'text-emerald-500' : bal[m.n] < 0 ? 'text-red-400' : 'text-gray-400'}">
                         ${bal[m.n] > 0 ? '收回' : bal[m.n] < 0 ? '需補' : '平手'} $${Math.abs(bal[m.n]).toFixed(1)}
                     </span>
                  </div>
             `).join('');
+            
             const res = document.getElementById('d_settleList');
             let g = [], r = [];
             for(let p in bal) { 
@@ -758,8 +742,7 @@ text-center text-gray-500">夾 $${shareInfo[m.n].toFixed(0)}</span>
             if(!g.length) {
                 res.innerHTML = `
                     <div class="text-center py-8 text-emerald-600 dark:text-emerald-400 font-bold">
-                        <img src="https://i.imgur.com/bKq0Gsr.png" 
-class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
+                        <img src="https://i.imgur.com/bKq0Gsr.png" class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
                         大家都冇欠大家錢！帳目完美平衡！喵～🐾
                     </div>`;
             } else {
@@ -770,8 +753,7 @@ class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
                             let v = Math.min(gv.a, rv.a); 
                              res.innerHTML += `
                                 <div class="flex justify-between items-center p-4 bg-sky-50 dark:bg-sky-900/50 rounded-2xl mb-2 border border-sky-100 dark:border-sky-800">
-                                    
-<span class="text-xs font-bold dark:text-white flex-1 break-all pr-2"><b>${gv.n}</b> <span class="text-sky-400 mx-1">➔</span> <b>${rv.n}</b></span>
+                                    <span class="text-xs font-bold dark:text-white flex-1 break-all pr-2"><b>${gv.n}</b> <span class="text-sky-400 mx-1">➔</span> <b>${rv.n}</b></span>
                                     <b class="text-sky-900 dark:text-sky-300 shrink-0">$${v.toFixed(2)}</b>
                                 </div>`; 
                              gv.a -= v; rv.a -= v;
@@ -781,7 +763,6 @@ class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
             }
         }
 
-        // 強制觸發：帶過場動畫嘅切換
         function h_switchTab(tab) {
             ['add', 'list', 'settle', 'mem'].forEach(t => { 
                 const panel = document.getElementById(`p-${t}`);
@@ -794,7 +775,6 @@ class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
             const activePanel = document.getElementById(`p-${tab}`);
             activePanel.classList.remove('hidden'); 
             
-            // 強制瀏覽器重繪 (Reflow)
             activePanel.style.animation = 'none';
             void activePanel.offsetHeight; 
             activePanel.style.animation = null;
@@ -808,9 +788,8 @@ class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
 
         function resetForm() {
             editExpIdx = -1;
-            document.getElementById('i_cat').value = sysCats[0].v; // 重置類別
+            document.getElementById('i_cat').value = sysCats[0].v; 
             handleCatChange();
-            // 更新刪除按鈕狀態
             document.getElementById('i_name').value = '';
             document.getElementById('i_amt').value = '';
             document.getElementById('i_currency').value = 'HKD';
@@ -840,8 +819,7 @@ class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
             document.getElementById('d_memList').innerHTML = allTrips[activeIdx].members.map((m, i) => `
                 <div class="flex items-center gap-1 bg-white dark:bg-gray-800 text-sky-800 dark:text-sky-300 px-3 py-2 rounded-full text-xs font-bold shadow-sm border dark:border-gray-600">
                     <span class="w-2 h-2 rounded-full" style="background:${m.c}"></span>
-                 
-    <span>${m.n}</span>
+                    <span>${m.n}</span>
                     <button onclick="h_removeMember(${i})" class="ml-2 text-gray-400 outline-none">×</button>
                 </div>
             `).join('');
@@ -855,8 +833,7 @@ class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
                 <div onclick="h_openTrip(${t.originalIdx})" class="glass p-5 rounded-[2rem] flex justify-between items-center active:scale-95 transition-transform cursor-pointer">
                     <div class="min-w-0 flex-1">
                         <h4 class="font-bold text-sky-950 dark:text-white text-sm truncate">${t.name}</h4>
-                   
-     <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${t.members.length} 人 · ${t.expenses.length} 筆</p>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">${t.members.length} 人 · ${t.expenses.length} 筆</p>
                     </div>
                     <button onclick="h_deleteTrip(${t.originalIdx}, event)" class="text-gray-300 dark:text-gray-600 text-xs px-3 py-1 hover:text-red-400 outline-none">刪除</button>
                 </div>
@@ -881,31 +858,27 @@ class="w-24 h-24 mx-auto mb-3 drop-shadow-md object-contain">
                 data: { 
                     labels: Object.keys(cats).filter(k => cats[k] > 0), 
                     datasets: [{ 
-           
-             data: Object.values(cats).filter(v => v > 0), 
+                        data: Object.values(cats).filter(v => v > 0), 
                         backgroundColor: ['#fbbf24', '#38bdf8', '#818cf8', '#f87171', '#34d399', '#f472b6', '#94a3b8', '#a78bfa', '#fb923c', '#2dd4bf'], 
                         borderWidth: isDark ? 2 : 0,
-                 
-        borderColor: isDark ? '#1f2937' : '#fff'
+                        borderColor: isDark ? '#1f2937' : '#fff'
                     }] 
                 }, 
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
-        
-            plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 10 } } } }, 
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 10 } } } }, 
                     cutout: '70%',
                     onClick: (e, elements, chart) => {
-                        
-if(elements.length > 0) {
+                        if(elements.length > 0) {
                             const idx = elements[0].index;
                             const label = chart.data.labels[idx];
                             chartActiveFilter = (chartActiveFilter === label) ? null : label;
                         } else {
                             chartActiveFilter = null;
-}
+                        }
                         
                         const filterEl = document.getElementById('i_listFilter');
-if(filterEl) filterEl.value = chartActiveFilter || "";
+                        if(filterEl) filterEl.value = chartActiveFilter || "";
                         
                         renderExpenseList();
                         h_switchTab('list');
@@ -914,16 +887,11 @@ if(filterEl) filterEl.value = chartActiveFilter || "";
             });
         }
 
-        function h_clearAll() { if(confirm("確定要清空所有紀錄？無法復原！")) { allTrips[activeIdx].expenses = []; h_saveData();
-        } }
-        function h_archiveTrip() { allTrips[activeIdx].isArchived = !allTrips[activeIdx].isArchived; h_saveData(); h_goHome();
-        }
-        function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("刪除？")) { allTrips.splice(idx, 1); h_saveData();
-        } }
-        function h_deleteExp(idx) { if(confirm("刪除這筆開支？")) { allTrips[activeIdx].expenses.splice(idx, 1); h_saveData();
-        } }
-        function h_removeMember(idx) { if(confirm("移除成員？(注意：不會影響已有紀錄)")) { allTrips[activeIdx].members.splice(idx, 1); h_saveData();
-        } }
+        function h_clearAll() { if(confirm("確定要清空所有紀錄？無法復原！")) { allTrips[activeIdx].expenses = []; h_saveData(); } }
+        function h_archiveTrip() { allTrips[activeIdx].isArchived = !allTrips[activeIdx].isArchived; h_saveData(); h_goHome(); }
+        function h_deleteTrip(idx, e) { e.stopPropagation(); if(confirm("刪除？")) { allTrips.splice(idx, 1); h_saveData(); } }
+        function h_deleteExp(idx) { if(confirm("刪除這筆開支？")) { allTrips[activeIdx].expenses.splice(idx, 1); h_saveData(); } }
+        function h_removeMember(idx) { if(confirm("移除成員？(注意：不會影響已有紀錄)")) { allTrips[activeIdx].members.splice(idx, 1); h_saveData(); } }
         
         function exportData() {
             const blob = new Blob([JSON.stringify(allTrips)], {type: "application/json"});
@@ -952,43 +920,43 @@ if(filterEl) filterEl.value = chartActiveFilter || "";
             tempDiv.style.backgroundPosition = 'center';
             
             let fixedOverviewHTML = overviewHTML
-                .replace(/text-gray-500|dark:[^\s"']+|text-emerald-500|text-red-400|text-white|text-gray-400/g, '')
+                .replace(/dark:[^\s"']+/g, '')
+                .replace(/text-gray-500|text-gray-400|text-gray-300|text-white/g, '') 
+                .replace(/class="([^"]*)text-emerald-500([^"]*)"/g, 'class="$1 $2" style="color: #10b981;"')
+                .replace(/class="([^"]*)text-red-400([^"]*)"/g, 'class="$1 $2" style="color: #ef4444;"')
                 .replace(/break-all/g, '')
                 .replace(/<span class="font-bold w-\[30%\]/g, '<span style="font-weight:bold; width:30%; word-wrap:break-word; word-break:break-all; white-space:normal;" ');
+
             let fixedSettleHTML = settleHTML
                 .replace(/dark:[^\s"']+/g, '')
-                .replace(/text-white|text-gray-500|text-gray-300|bg-sky-900|bg-sky-50|text-emerald-600/g, '')
+                .replace(/text-gray-500|text-gray-400|text-gray-300|text-white|bg-sky-900\/50|bg-sky-900|bg-sky-50/g, '')
+                .replace(/class="([^"]*)text-emerald-600([^"]*)"/g, 'class="$1 $2" style="color: #059669;"') 
+                .replace(/class="([^"]*)text-sky-900([^"]*)"/g, 'class="$1 $2" style="color: #0369a1;"') 
                 .replace(/break-all/g, '')
                 .replace(/<span class="text-xs font-bold flex-1/g, '<span style="font-size:12px; font-weight:bold; flex:1; word-wrap:break-word; word-break:break-all; white-space:normal;" ');
+
             tempDiv.innerHTML = `
-                <div style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 2rem; padding: 30px 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); text-align: center; border: 1px solid rgba(255,255,255,0.6);">
+                <div style="background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border-radius: 2rem; padding: 30px 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; border: 1px solid rgba(255,255,255,0.6);">
                     <h2 style="font-size: 26px; font-weight: 900; color: #082f49; margin: 0 0 5px 0; word-wrap:break-word; word-break:break-all;">${trip.name}</h2>
-                    <p style="font-size: 11px; color: #64748b; letter-spacing: 
-2px; margin: 0;">總花費 (HKD)</p>
+                    <p style="font-size: 11px; color: #64748b; letter-spacing: 2px; margin: 0;">總花費 (HKD)</p>
                     <h3 style="font-size: 38px; font-weight: 900; color: #0369a1; margin: 10px 0 25px 0;">${total}</h3>
                     
-                    <div style="text-align: left; background: rgba(248,250,252,0.8); padding:20px; border-radius:1.5rem; margin-bottom:20px; border: 1px solid rgba(226,232,240,0.8);">
-               
-         <p style="font-size:13px; color:#0369a1; font-weight:900; border-bottom:2px solid #bae6fd; padding-bottom:8px; margin-bottom:12px;
-letter-spacing: 1px;">成員總覽</p>
+                    <div style="text-align: left; background: rgba(255,255,255,0.85); padding:20px; border-radius:1.5rem; margin-bottom:20px; border: 1px solid rgba(226,232,240,0.9); box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                        <p style="font-size:13px; color:#0369a1; font-weight:900; border-bottom:2px solid #bae6fd; padding-bottom:8px; margin-bottom:12px; letter-spacing: 1px;">成員總覽</p>
                         <div style="color: #1e293b;">
                             ${fixedOverviewHTML}
                         </div>
                     </div>
  
-                   
-                    <div style="text-align: left;
-background: rgba(255,255,255,0.8); padding:20px; border-radius:1.5rem; border: 1px solid rgba(226,232,240,0.8); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="text-align: left; background: rgba(255,255,255,0.85); padding:20px; border-radius:1.5rem; border: 1px solid rgba(226,232,240,0.9); box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                         <div style="color: #1e293b;">
                             ${fixedSettleHTML}
                         </div>
-          
                     </div>
                     
-                    <div style="margin-top: 30px;
-padding-top: 15px; border-top: 2px dashed rgba(203,213,225,0.8); position: relative; text-align: center;">
-                        <span style="font-size: 11px;
-color: #64748b; font-weight: bold; letter-spacing: 2px;">旅結 開支助手 生成</span>
+                    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px dashed rgba(203,213,225,0.9); position: relative; display: flex; align-items: center; justify-content: center; height: 88px;">
+                        <span style="font-size: 12px; color: #64748b; font-weight: bold; letter-spacing: 2px; z-index: 10;">旅結 開支助手 生成</span>
+                        <img src="https://i.imgur.com/SSROc13.png" style="width: 88px; height: 88px; position: absolute; right: -10px; bottom: -10px; object-fit: contain; z-index: 20;">
                     </div>
                 </div>
             `;
@@ -996,25 +964,22 @@ color: #64748b; font-weight: bold; letter-spacing: 2px;">旅結 開支助手 生
 
             try {
                 const loadImages = [
- 
                    'https://i.imgur.com/DRcZvHV.png',
-                    'https://i.imgur.com/bKq0Gsr.png'
+                    'https://i.imgur.com/bKq0Gsr.png',
+                    'https://i.imgur.com/SSROc13.png'
                 ].map(src => {
                     return new Promise(resolve => {
-                   
-     const img = new Image();
+                        const img = new Image();
                         img.crossOrigin = "anonymous";
                         img.onload = resolve; img.onerror = resolve; setTimeout(resolve, 1500);
                         img.src = src;
-        
                     });
                 });
                 await Promise.all(loadImages);
 
                 const canvas = await html2canvas(tempDiv, { 
                     scale: 2, 
-           
-                 useCORS: true, 
+                    useCORS: true, 
                     allowTaint: true,
                     backgroundColor: null
                 });
@@ -1022,8 +987,7 @@ color: #64748b; font-weight: bold; letter-spacing: 2px;">旅結 開支助手 生
                 link.download = `${trip.name}_結算圖.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-            } catch (err) { alert("生成圖片失敗"); } finally { document.body.removeChild(tempDiv);
-            }
+            } catch (err) { alert("生成圖片失敗"); } finally { document.body.removeChild(tempDiv); }
         }
 
         function h_copyMsg() {
